@@ -1,0 +1,45 @@
+{
+  "name": "lapp",
+  "version": "1.0.0",
+  "description": "lapp = little app, lapp mainly focus on ui component which can be easily developed with OOP or functional programing!",
+  "main": "src/index.js",
+  "scripts": {
+    "run:example": "gulp main && min-http .",
+    "server": "min-http .",
+    "build": "npm run gen:fp && npm run gen:class ",
+    "rollup": "rollup -c rollup.config.js",
+    "gen:fp": "rollup -c rollupTestFP.config.js",
+    "gen:class": "rollup -c rollupTestClass.config.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chalecao/lapp.git"
+  },
+  "author": "chalecao",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/chalecao/lapp/issues"
+  },
+  "homepage": "https://github.com/chalecao/lapp#readme",
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-plugin-transform-react-jsx": "^6.24.1",
+    "babel-preset-env": "^1.6.1",
+    "babelify": "^8.0.0",
+    "browserify": "^14.5.0",
+    "gulp": "^3.9.1",
+    "gulp-babel": "^7.0.0",
+    "gulp-browserify": "^0.5.1",
+    "gulp-concat": "^2.6.1",
+    "gulp-jshint": "^2.0.4",
+    "gulp-load-plugins": "^1.5.0",
+    "gulp-plumber": "^1.1.0",
+    "gulp-uglify": "^3.0.0",
+    "jshint": "^2.9.5",
+    "rollup": "^0.52.3",
+    "rollup-plugin-babel": "^3.0.3",
+    "rollup-plugin-buble": "^0.18.0",
+    "rollup-plugin-uglify": "^2.0.1",
+    "uglify-es": "^3.3.2"
+  }
+}
