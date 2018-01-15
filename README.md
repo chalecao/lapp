@@ -1,5 +1,5 @@
 ## lapp
-lapp = function & class virtual dom, it's pure, simlpe and fast to render JSX tpl. Now it's depend on babel to transform jsx tpl to the func, but lapp extend self template grama. you can see the detail below.
+lapp = lapp = little app, lapp mainly focus on ui component which can be easily developed with OOP or functional programing!
 
 ## npm module
 you can install lapp:
@@ -8,87 +8,91 @@ npm install lapp --save-dev
 ```
 
 ## how to use
+lapp support both functional program and oop!
+1. fp example, you can find it in example folder main-fp.js
 
-lapp support function component and class component, typeof class = function.
-
-for the function component example, the code as follows, you can also see the example folder: 
 ```
 /** @jsx creatNode */
-import {creatNode, initNode}  from "../src/index"
-let count = 0
-let MyButton = {
-    render: ({ props, children }) =>{
-        return (<button onClick={addCount} {...props}>{children}{count}</button>)
+import { creatNode, initNode, app, IF, ELSE, FOR } from "../src/index"
+import { MyButtonView, actions as MyButtonAction } from "./mybutton-fp"
+
+const state = {
+    aa: -1,
+    bb: -1,
+    data: [{ name: "11", href: "22" }, { name: "33", href: "44" }]
+}
+
+const actions = {
+    log: (e) => {
+        console.log(e.target.value);
+        MyButtonAction.addCount()
+    },
+    handleClick: () => {
+        state.data.push({ name: "77", href: "88" })
+        BoxView.$update()
+    },
+    compute: (data) => {
+        let dd = [];
+        state.data.forEach((item, index) => {
+            dd.push(<div>
+                <div class="title">
+                    {item.name}
+                </div>
+                <IF cond={item.href == "22"}>
+                    <div class="spin">{item.href}</div>
+                </IF>
+            </div>
+            )
+        })
+        return dd;
     }
 }
 
-let Box ={
-    render: ({ props, children }) => <ul style="list-style: none;">
-        <li className="item" onClick={() => alert('hi!')}>item 1</li>
-        <li className="item">
-            <input type="checkbox" checked={true} />
-            <input type="text" onInput={log} />
-        </li>
-        {/* this node will always be updated */}
-        <li forceUpdate={true}>text</li>
-        <MyButton className="button">hello, button</MyButton>
-    </ul>
-};
+const BoxView = ({ props, children }) => (<ul style="list-style: none;">
+    <li className="item" onClick={() => alert('hi!')}>item 1</li>
+    <li className="item">
+        <input type="checkbox" checked={true} />
+        <input type="text" onInput={actions.log} />
+    </li>
+    <li onClick={actions.handleClick} forceUpdate={true}>text</li>
+    <MyButtonView className="button">hello, button</MyButtonView>
+    <IF class="aaa" cond={state.aa > 0}>
+        aa 大于 0
+            <ELSE cond={state.bb > 0}>
+            aa 小于 0
+                bb 大于 0
+                <ELSE>
+                aa 小于 0
+                   bb 小于 0
+                </ELSE>
+        </ELSE>
+    </IF>
+    <IF cond={state.aa < 0}>
+        sdfsdfsfsd
+            <FOR  class="bbb" data={state.data} key="item" >
+            <div>
+                <a href="__item.href__" >__item.name__ -  __item.index__ __item.test__</a>
+                <div><span>__item.href__ </span></div>
+                <IF cond={state.aa < 0}>
+                    aa 小于 0
+                    </IF>
+            </div>
+        </FOR>
+    </IF>
+    {actions.compute(state.data)}
+</ul>
+);
 
-
-function log(e) {
-    console.log(e.target.value);
-}
-
-function addCount() {
-    count++
-    app()
-}
-
-let render = initNode(document.body)
-let app = () => {
-    render(<Box></Box>)
-}
-app()
-
+//main
+console.time("render virtual DOM with FP")
+app(document.querySelector("#app"), BoxView, MyButtonView)
+console.timeEnd("render virtual DOM with FP")
 ```
-
-for the class component, see as follows:
+2. oop example, you can find it in example folder main-class.js
 ```
 /** @jsx creatNode */
-import { creatNode, initNode, component } from "../src/index"
-class myButton  extends component{
-    constructor(){
-        super()
-        this.count = 0;
-    }
-    addCount() {
-        this.count++;
-        this.$update();
-    }
-    render({ props, children}) {
-        return (<button onClick={this.addCount.bind(this)} {...props}>{children}{this.count}</button>)
-    }
-}
-
-export default myButton
-```
-
-you can run the example with:
-```
-npm run run:example
-```
-you can use it freely!
-
-## template
-lapp define it's own template through  component provided default in the tpl. to keep template simple, it doesn't support compute the data with context variables.
-
-you you can also see the example, a little complicated as follows:
-```
-/** @jsx creatNode */
-import { creatNode, initNode, component } from "../src/index"
-import MyButton from "./myButton"
-import {IF, ELSE, FOR} from "../src/tpl"
+import { creatNode, initNode, component, IF, ELSE, FOR } from "../src/index"
+import MyButton from "./myButton-class"
 class main extends component {
     constructor() {
         super()
@@ -98,6 +102,14 @@ class main extends component {
     }
     log(e) {
         console.log(e.target.value);
+    }
+    handleClick(){
+        this.data.push({ name: "55", href: "66" })
+        this.$update()
+    }
+    handleClick2(){
+        this.data.push({ name: "77", href: "88" })
+        this.$update()
     }
     compute(data){
         let dd = [];
@@ -114,16 +126,16 @@ class main extends component {
         })
         return dd;
     }
-    render({ props, children }) {
+    render() {
         const aa = [1, 2]
         return (<ul style="list-style: none;">
-            <li className="item" onClick={() => alert('hi!')}>item 1</li>
-            <li className="item">
+            <li className="item" onClick={this.handleClick.bind(this)}>item 1</li>
+            <li className="item" >
                 <input type="checkbox" checked={true} />
                 <input type="text" onInput={this.log.bind(this)} />
             </li>
             {/* this node will always be updated */}
-            <li forceUpdate={true}>text</li>
+            <li onClick={this.handleClick2.bind(this)} forceUpdate={true}>text</li>
             <MyButton className="button">hello, button</MyButton>
             <IF cond={this.aa > 0}>
                 aa 大于 0
@@ -134,16 +146,18 @@ class main extends component {
                         aa 小于 0
                    bb 小于 0
                 </ELSE>
-                </ELSE>
+            </ELSE>
             </IF>
             <IF cond={this.aa < 0}>
             sdfsdfsfsd
-            <FOR data={this.data} key="item" >
-                <a href="__item.href__" >__item.name__ -  __item.index__</a>
-                <div><span>__item.href__ </span></div>
-                <IF cond={this.aa < 0}>
-                aa 小于 0
-                </IF>
+            <FOR class="sadad" data={this.data} key="item" >
+                <div>
+                    <a href="__item.href__" >__item.name__ -  __item.index__ __item.test__</a>
+                    <div><span>__item.href__ </span></div>
+                    <IF cond={this.aa < 0}>
+                    aa 小于 0
+                    </IF>
+                </div>
             </FOR>
             </IF>
             {this.compute(this.data)}
@@ -151,15 +165,5 @@ class main extends component {
     }
 
 }
-
-let renderGlobal = initNode(document.body)
-renderGlobal(new main().render({ props: {}, children: [] }))
-
-//simple usage, just create DOM with virtual DOM
-document.body.appendChild(createDom(new main().render()))
-
+export default main
 ```
-## release
-* v1.1.0 fix many bugs;
-    * add ins to fix bug: update the func element
-    * fix bug, shou test type after, because pre may undefined when create new node
