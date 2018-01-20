@@ -1,4 +1,4 @@
-// fcvd - daexe.com
+// lapp - fed123.com
 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
@@ -39,6 +39,9 @@ var isSameThunk = function isSameThunk(pre, next) {
     return pre.fn === next.fn;
 };
 
+var isSVG = function isSVG(name) {
+    return ["svg", "path", "animate"].indexOf(name) >= 0;
+};
 var isEventProp = function isEventProp(name) {
     return (/^on/.test(name)
     );
@@ -136,14 +139,8 @@ function createThunkElement(fn, props, children, options) {
 
 function createTextElement(text) {
     return {
-        type: 'text',
+        type: text ? 'text' : 'empty',
         nodeValue: text
-    };
-}
-
-function createEmptyElement() {
-    return {
-        type: 'empty'
     };
 }
 
@@ -151,7 +148,7 @@ function reduceChildren(children, vnode) {
     if (isString(vnode) || isNumber(vnode)) {
         children.push(createTextElement(vnode));
     } else if (isNull(vnode) || isUndefined(vnode)) {
-        children.push(createEmptyElement());
+        children.push(createTextElement());
     } else if (Array.isArray(vnode)) {
         children = [].concat(_toConsumableArray(children), _toConsumableArray(vnode.reduce(reduceChildren, [])));
     } else {
@@ -166,23 +163,14 @@ function reduceChildren(children, vnode) {
  * @param {*} name 
  * @param {*} value 
  */
-function setBooleanProp(node, name, value) {
+function operBooleanProp(node, name, value, oper) {
     if (value) {
-        node.setAttribute(name, value);
+        node[oper](name, value);
         node[name] = true;
     } else {
+        node[oper](name);
         node[name] = false;
     }
-}
-
-/**
- * 删除bool类型属性
- * @param {*} node 
- * @param {*} name 
- */
-function removeBooleanProp(node, name) {
-    node.removeAttribute(name);
-    node[name] = false;
 }
 
 /**
@@ -191,50 +179,20 @@ function removeBooleanProp(node, name) {
  * @param key  attribute key
  * @param value attribue value
  */
-function setAttribute(node, key, value) {
+function operAttribute(node, key, value, oper) {
     if (isCustomProp(key)) {
         return;
     } else if (key === 'className') {
-        node.setAttribute('class', value);
+        node[oper]('class', value);
     } else if (typeof value === 'boolean') {
-        setBooleanProp(node, key, value);
+        operBooleanProp(node, key, value, oper);
     } else {
         //remove attr when no value, fix bug tag a , if have href like <a href>, browser will reload
-        if (value !== "") {
-            node.setAttribute(key, value);
+        if (value !== "" && value != undefined) {
+            node[oper](key, value);
         } else {
             node.removeAttribute(key);
         }
-    }
-}
-
-/**
- * set all attributes
- * @param {*} node 
- * @param {*} props 
- */
-function setAttributes(node, props) {
-    Object.keys(props).forEach(function (name) {
-        setAttribute(node, name, props[name]);
-    });
-}
-
-/**
- * 删除attribute
- * @param node
- * @param key
- * @param previousValue
- */
-function removeAttribute(node, key, previousValue) {
-
-    if (isCustomProp(key)) {
-        return;
-    } else if (name === 'className') {
-        node.removeAttribute('class ');
-    } else if (typeof previousValue === 'boolean') {
-        removeBooleanProp(node, key);
-    } else {
-        node.removeAttribute(key);
     }
 }
 
@@ -246,10 +204,11 @@ function removeAttribute(node, key, previousValue) {
  * @param {*} oldVal 
  */
 function updateAttribute(node, name, newVal, oldVal) {
+    console.log(newVal, oldVal);
     if (!newVal) {
-        removeAttribute(node, name, oldVal);
+        operAttribute(node, name, typeof newVal === 'boolean' ? newVal : oldVal, "removeAttribute");
     } else if (!oldVal || newVal !== oldVal) {
-        setAttribute(node, name, newVal);
+        operAttribute(node, name, newVal, "setAttribute");
     }
 }
 /**
@@ -261,9 +220,9 @@ function updateAttribute(node, name, newVal, oldVal) {
 function updateAttributes($target, newProps) {
     var oldProps = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
-    var props = Object.assign({}, newProps, oldProps);
+    var props = Object.assign({}, oldProps, newProps);
     Object.keys(props).forEach(function (name) {
-        updateAttribute($target, name, newProps[name], oldProps[name]);
+        !isEventProp(name) && updateAttribute($target, name, newProps[name], oldProps[name]);
     });
 }
 
@@ -339,13 +298,17 @@ function createThunk(vnode, dispatch) {
     return DOMElement;
 }
 
+function createSVGElement(name) {
+    return document.createElementNS('http://www.w3.org/2000/svg', name);
+}
+
 /**
  * html节点
  * @param {*} vnode 
  */
 function createHTMLElement(vnode, dispatch) {
-    var $el = document.createElement(vnode.tagName);
-    vnode.attributes && setAttributes($el, vnode.attributes);
+    var $el = isSVG(vnode.tagName) ? createSVGElement(vnode.tagName) : document.createElement(vnode.tagName);
+    vnode.attributes && updateAttributes($el, vnode.attributes);
     vnode.attributes && addEventListeners($el, vnode.attributes);
     vnode.children.map(function (item) {
         return createElement(item, dispatch);
@@ -901,7 +864,7 @@ var app = function app(root) {
         var env = initNode(root)(createNode(subviews[0], null));
         subviews.map(function (item) {
             item.$update = function () {
-                initNode(root, env)(createNode(subviews[0], null));
+                env = initNode(root, env)(createNode(subviews[0], null));
             };
         });
     }();
@@ -936,6 +899,7 @@ var MyButtonView = function MyButtonView(_ref) {
 var state = {
     aa: -1,
     bb: -1,
+    checked: true,
     data: [{ name: "11", href: "22" }, { name: "33", href: "44" }]
 };
 
@@ -946,6 +910,11 @@ var actions$$1 = {
     },
     handleClick: function handleClick() {
         state.data.push({ name: "77", href: "88" });
+        BoxView.$update();
+    },
+    handleCheck: function handleCheck(e) {
+        state.checked = !state.checked;
+        console.log(state.checked);
         BoxView.$update();
     },
     compute: function compute(data) {
@@ -990,7 +959,7 @@ var BoxView = function BoxView(_ref) {
         creatNode$$1(
             "li",
             { className: "item" },
-            creatNode$$1("input", { type: "checkbox", checked: true }),
+            creatNode$$1("input", { type: "checkbox", checked: state.checked, onChange: actions$$1.handleCheck }),
             creatNode$$1("input", { type: "text", onInput: actions$$1.log })
         ),
         creatNode$$1(

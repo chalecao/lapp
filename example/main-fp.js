@@ -2,9 +2,10 @@
 import { creatNode, initNode, app, IF, ELSE, FOR } from "../src/index"
 import { MyButtonView, actions as MyButtonAction } from "./mybutton-fp"
 
-const state = {
+let state = {
     aa: -1,
     bb: -1,
+    checked: true,
     data: [{ name: "11", href: "22" }, { name: "33", href: "44" }]
 }
 
@@ -15,6 +16,11 @@ const actions = {
     },
     handleClick: () => {
         state.data.push({ name: "77", href: "88" })
+        BoxView.$update()
+    },
+    handleCheck:(e)=>{
+        state.checked = !state.checked
+        console.log(state.checked)
         BoxView.$update()
     },
     compute: (data) => {
@@ -37,7 +43,7 @@ const actions = {
 const BoxView = ({ props, children }) => (<ul style="list-style: none;">
     <li className="item" onClick={() => alert('hi!')}>item 1</li>
     <li className="item">
-        <input type="checkbox" checked={true} />
+        <input type="checkbox" checked={state.checked} onChange={actions.handleCheck}/>
         <input type="text" onInput={actions.log} />
     </li>
     <li onClick={actions.handleClick} forceUpdate={true}>text</li>

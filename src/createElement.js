@@ -1,5 +1,5 @@
-import { isUndefined, isString, isNumber, isFunction , isClass, isNull, isNative, isThunk, isText, isSameThunk } from './util'
-import { setAttributes } from "./attribute"
+import { isUndefined, isSVG, isString, isNumber, isFunction, isClass, isNull, isNative, isThunk, isText, isSameThunk } from './util'
+import { updateAttributes } from "./attribute"
 import { addEventListeners } from "./event"
 
 /**
@@ -59,13 +59,17 @@ function createThunk(vnode, dispatch) {
     return DOMElement
 }
 
+function createSVGElement(name) {
+    return document.createElementNS('http://www.w3.org/2000/svg', name);
+}
+
 /**
  * html节点
  * @param {*} vnode 
  */
 function createHTMLElement(vnode, dispatch) {
-    let $el = document.createElement(vnode.tagName)
-    vnode.attributes && setAttributes($el, vnode.attributes)
+    let $el = isSVG(vnode.tagName) ? createSVGElement(vnode.tagName) : document.createElement(vnode.tagName)
+    vnode.attributes && updateAttributes($el, vnode.attributes)
     vnode.attributes && addEventListeners($el, vnode.attributes);
     vnode.children
         .map(item => { return createElement(item, dispatch) })

@@ -78,11 +78,7 @@ export function updateTarget(node, pre, next, index = 0) {
         return node;
     }
 
-    if (!isNull(pre) && isNull(next) || isNull(pre) && !isNull(next)) {
-        return replaceNode(node, pre, next, index)
-    }
-
-    if (pre.type !== next.type) {
+    if (!isNull(pre) && isNull(next) || isNull(pre) && !isNull(next) || pre.type !== next.type ) {
         return replaceNode(node, pre, next, index)
     }
 
@@ -168,8 +164,8 @@ function diffChildren(node, pre, next, index) {
     let preChildren = pre.children || [],
         nextChildren = next.children || [],
         i,
-        nodeChildren = Array.prototype.slice.call(node.childNodes) // fix bug: node.children => node.childNodes, node.childNodes contains text node, but node.children doesn't
-
+        nodeChildren = Array.prototype.slice.call(node.childNodes) 
+        // fix bug: node.children => node.childNodes, node.childNodes contains text node, but node.children doesn't
     for (i = 0; i < preChildren.length || i < nextChildren.length; i++) {
         updateElement(nodeChildren[index], preChildren[i], nextChildren[i], i)
     }

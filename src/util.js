@@ -14,6 +14,7 @@ export const isArray = Array.isArray
 export const isObj = (name) => Object.prototype.toString.call(name).slice(8,-1) == "Object"
 export const isSameThunk = (pre, next) => pre.fn === next.fn
 
+export const isSVG = (name) => ["svg","path","animate"].indexOf(name)>=0
 export const isEventProp = (name) => /^on/.test(name)
 export const extractEventName = (name) => name.slice(2).toLowerCase()
 export const isCustomProp = (name) => isEventProp(name) || name === 'forceUpdate'

@@ -7,10 +7,7 @@ export default function initNode(container, _env) {
 
     //派发更新操作
     let dispatch = effect => effect == "updateAll" && updateAll()
-
-
     if (!_env) container.innerHTML = ''
-
     function create(vnode, context = container) {
         node = createElement(vnode, dispatch)
         context.appendChild(node)

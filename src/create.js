@@ -34,14 +34,8 @@ function createThunkElement(fn, props, children, options) {
 
 function createTextElement(text) {
     return {
-        type: 'text',
+        type: text?'text':'empty',
         nodeValue: text
-    }
-}
-
-function createEmptyElement() {
-    return {
-        type: 'empty'
     }
 }
 
@@ -49,7 +43,7 @@ function reduceChildren(children, vnode) {
     if (isString(vnode) || isNumber(vnode)) {
         children.push(createTextElement(vnode))
     } else if (isNull(vnode) || isUndefined(vnode)) {
-        children.push(createEmptyElement())
+        children.push(createTextElement())
     } else if (Array.isArray(vnode)) {
         children = [...children, ...vnode.reduce(reduceChildren, [])]
     } else {

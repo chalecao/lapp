@@ -1,4 +1,4 @@
-import { isBool, isCustomProp, extractEventName } from './util'
+import { isEventProp, isBool, isCustomProp, extractEventName } from './util'
 
 /**
  * 设置bool类型属性
@@ -6,23 +6,14 @@ import { isBool, isCustomProp, extractEventName } from './util'
  * @param {*} name 
  * @param {*} value 
  */
-function setBooleanProp(node, name, value) {
+function operBooleanProp(node, name, value, oper) {
     if (value) {
-        node.setAttribute(name, value);
+        node[oper](name, value);
         node[name] = true;
     } else {
+        node[oper](name);
         node[name] = false;
     }
-}
-
-/**
- * 删除bool类型属性
- * @param {*} node 
- * @param {*} name 
- */
-function removeBooleanProp(node, name) {
-    node.removeAttribute(name);
-    node[name] = false;
 }
 
 /**
@@ -31,54 +22,21 @@ function removeBooleanProp(node, name) {
  * @param key  attribute key
  * @param value attribue value
  */
-export function setAttribute(node, key, value) {
+export function operAttribute(node, key, value, oper) {
     if (isCustomProp(key)) {
         return;
     } else if (key === 'className') {
-        node.setAttribute('class', value);
+        node[oper]('class', value);
     } else if (typeof value === 'boolean') {
-        setBooleanProp(node, key, value);
+        operBooleanProp(node, key, value, oper);
     } else {
         //remove attr when no value, fix bug tag a , if have href like <a href>, browser will reload
         if (value !== "" && value != undefined) {
-            node.setAttribute(key, value);
+            node[oper](key, value);
         }else{
             node.removeAttribute(key);
         }
     }
-}
-
-/**
- * set all attributes
- * @param {*} node 
- * @param {*} props 
- */
-export function setAttributes(node, props) {
-    Object.keys(props).forEach(name => {
-        setAttribute(node, name, props[name]);
-    });
-}
-
-
-
-/**
- * 删除attribute
- * @param node
- * @param key
- * @param previousValue
- */
-export function removeAttribute(node, key, previousValue) {
-
-    if (isCustomProp(key)) {
-        return;
-    } else if (name === 'className') {
-        node.removeAttribute('class ');
-    } else if (typeof previousValue === 'boolean') {
-        removeBooleanProp(node, key);
-    } else {
-        node.removeAttribute(key);
-    }
-
 }
 
 /**
@@ -89,10 +47,11 @@ export function removeAttribute(node, key, previousValue) {
  * @param {*} oldVal 
  */
 export function updateAttribute(node, name, newVal, oldVal) {
+    // console.log(newVal, oldVal)
     if (!newVal) {
-        removeAttribute(node, name, oldVal);
+        operAttribute(node, name, typeof newVal === 'boolean'?newVal:oldVal, "removeAttribute");
     } else if (!oldVal || newVal !== oldVal) {
-        setAttribute(node, name, newVal);
+        operAttribute(node, name, newVal, "setAttribute");
     }
 }
 /**
@@ -102,8 +61,8 @@ export function updateAttribute(node, name, newVal, oldVal) {
  * @param {*} oldProps 
  */
 export function updateAttributes($target, newProps, oldProps = {}) {
-    const props = Object.assign({}, newProps, oldProps);
+    const props = Object.assign({}, oldProps, newProps);
     Object.keys(props).forEach(name => {
-        updateAttribute($target, name, newProps[name], oldProps[name]);
+        !isEventProp(name) && updateAttribute($target, name, newProps[name], oldProps[name]);
     });
 }
