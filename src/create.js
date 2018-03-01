@@ -1,11 +1,10 @@
-import { isUndefined, isString, isNumber, isFunction, isNull } from './util'
+import { isUndefined, isString, isNumber, isFunction, isNull, isArray } from './util'
 
-export default function createNode(type, attributes, ...children) {
-    if (!type) throw new TypeError('element() needs a type.')
-    attributes = attributes || {}
-    children = Array.prototype.reduce.call(children || [], reduceChildren, [])
+export default function createNode(type, attributes = {}, ...children) {
+    if (!type) return;
+    children = Array.prototype.reduce.call(children, reduceChildren, [])
     if (isFunction(type)) {
-        return createThunkElement(type, attributes, children, type)
+        return createThunk(type, attributes, children, type)
     }
     return {
         type: 'native',
@@ -22,7 +21,7 @@ export default function createNode(type, attributes, ...children) {
  * @param children
  * @returns {{type: string, fn: *, attributes: *, children: *}}
  */
-function createThunkElement(fn, props, children, options) {
+function createThunk(fn, props, children, options) {
     return {
         type: 'thunk',
         fn,
@@ -32,19 +31,19 @@ function createThunkElement(fn, props, children, options) {
     }
 }
 
-function createTextElement(text) {
+function createText(text) {
     return {
-        type: text?'text':'empty',
+        type: text ? 'text' : 'empty',
         nodeValue: text
     }
 }
 
 function reduceChildren(children, vnode) {
     if (isString(vnode) || isNumber(vnode)) {
-        children.push(createTextElement(vnode))
+        children.push(createText(vnode))
     } else if (isNull(vnode) || isUndefined(vnode)) {
-        children.push(createTextElement())
-    } else if (Array.isArray(vnode)) {
+        children.push(createText())
+    } else if (isArray(vnode)) {
         children = [...children, ...vnode.reduce(reduceChildren, [])]
     } else {
         children.push(vnode)

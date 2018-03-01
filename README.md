@@ -16,8 +16,7 @@ lapp support both functional program and oop!
 1. fp example, you can find it in example folder main-fp.js
 
 ```
-/** @jsx creatNode */
-import { creatNode, initNode, app, IF, ELSE, FOR } from "../src/index"
+import { l, app, IF, ELSE, FOR } from "../src/index+"
 import { MyButtonView, actions as MyButtonAction } from "./mybutton-fp"
 
 const state = {
@@ -94,8 +93,7 @@ console.timeEnd("render virtual DOM with FP")
 ```
 2. oop example, you can find it in example folder main-class.js
 ```
-/** @jsx creatNode */
-import { creatNode, initNode, component, IF, ELSE, FOR } from "../src/index"
+import { l, component, IF, ELSE, FOR } from "../src/index+"
 import MyButton from "./myButton-class"
 class main extends component {
     constructor() {
@@ -170,4 +168,12 @@ class main extends component {
 
 }
 export default main
+
+console.time("render virtual DOM with class")
+app(document.querySelector("#app"), new main())
+console.timeEnd("render virtual DOM with class")
+
 ```
+
+### changelog
+1. up to my project experience, i delete APIs that no need, to make lapp as small as possiable.

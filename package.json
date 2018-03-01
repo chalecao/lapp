@@ -7,7 +7,8 @@
     "run:example": "gulp main && min-http .",
     "server": "min-http .",
     "build": "npm run gen:fp && npm run gen:class ",
-    "rollup": "rollup -c rollup.config.js && rollup -c rollup+.config.js",
+    "rollup": "rollup -c rollup.config.js",
+    "rollup+": "rollup -c rollup+.config.js",
     "gen:fp": "rollup -c rollupTestFP.config.js",
     "gen:class": "rollup -c rollupTestClass.config.js"
   },

@@ -1,5 +1,5 @@
 import component from "../component"
-import creatNode from "../create"
+import l from "../create"
 import { deepClone, findChildren } from "../util"
 class elseBox extends component {
     constructor() {
@@ -7,7 +7,7 @@ class elseBox extends component {
     }
 
     render({ props, children }) {
-        if (Object.keys(props).indexOf("cond") >= 0) {
+        if (props && Object.keys(props).indexOf("cond") >= 0) {
             let elseChildren = findChildren(children, "else")
 
             let _children = children;
@@ -18,7 +18,7 @@ class elseBox extends component {
             let subprop = deepClone(props)
             delete subprop["cond"]
             if (props.cond) {
-               
+
                 return (<div {...subprop}>{_children}</div>)
             } else {
                 return (<div {...subprop}>{elseChildren.children}</div>)

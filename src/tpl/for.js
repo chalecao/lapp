@@ -1,5 +1,5 @@
 import component from "../component"
-import creatNode from "../create"
+import l from "../create"
 import { JSON2Hash, deepClone } from "../util"
 
 class forBox extends component {

@@ -9,7 +9,7 @@ const state = {
 export const actions = {
     addCount: () => {
         state.count++;
-        MyButtonView.update()
+        MyButtonView.$update()
     }
 }
 

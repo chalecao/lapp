@@ -5,8 +5,8 @@ import { minify } from 'uglify-es';
 
 export default {
     format: 'cjs',
-    entry: 'example/init-class.js',
-    dest: 'dist/init-class.js',
+    entry: 'example/main-class.js',
+    dest: 'dist/main-class.js',
     banner: '// lapp - fed123.com',
     footer:"",
     external: [],
@@ -22,7 +22,7 @@ export default {
         ]],
         "plugins": [
             ["transform-react-jsx", {
-                "pragma": "creatNode"
+                "pragma": "l"
             }]
             // "external-helpers"//注意这个参数不能加，加了之后模块exports有问题，坑坑坑
         ]}),

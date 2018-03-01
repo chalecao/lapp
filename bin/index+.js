@@ -1,1 +1,892 @@
-var _typeof="function"==typeof Symbol&&"symbol"==typeof Symbol.iterator?function(e){return typeof e}:function(e){return e&&"function"==typeof Symbol&&e.constructor===Symbol&&e!==Symbol.prototype?"symbol":typeof e},isType=function(e){return function(t){return(void 0===t?"undefined":_typeof(t))===e}},isVType=function(e){return function(t){return t.type===e}},isUndefined=function(e){return isType("undefined")(e)&&void 0==e},isString=isType("string"),isBool=isType("boolean"),isNumber=isType("number"),isFunction=function(e){return e.toString().match("function")},isClass=function(e){return e.toString().match("class ")},isNull=function(e){return null===e},isNative=isVType("native"),isThunk=isVType("thunk"),isText=isVType("text"),isArray=Array.isArray,isObj=function(e){return"Object"==Object.prototype.toString.call(e).slice(8,-1)},isSameThunk=function(e,t){return e.fn===t.fn},isSVG=function(e){return["svg","path","animate"].indexOf(e)>=0},isEventProp=function(e){return/^on/.test(e)},extractEventName=function(e){return e.slice(2).toLowerCase()},isCustomProp=function(e){return isEventProp(e)||"forceUpdate"===e},JSON2Hash=function e(t,n){var r={};return Object.keys(t).forEach(function(i){r[n+"."+i]=t[i],"object"==_typeof(t[i])&&(r=Object.assign(r,e(t[i],n+"."+i)))}),r},findChildren=function(e,t){var n=-1,r=e.reverse().find(function(e,r){if(e.fn&&e.fn.toString().match(t))return n=r,!0});return{index:n,children:r}},deepClone=function e(t){var n;if(isObj(t))n={};else{if(!isArray(t))return t;n=[]}for(var r in t){var i=t[r];isObj(i)?n[r]=e(i):isArray(i)?n[r]=e(i):n[r]=t[r]}return n},uti=Object.freeze({isUndefined:isUndefined,isString:isString,isBool:isBool,isNumber:isNumber,isFunction:isFunction,isClass:isClass,isNull:isNull,isNative:isNative,isThunk:isThunk,isText:isText,isArray:isArray,isObj:isObj,isSameThunk:isSameThunk,isSVG:isSVG,isEventProp:isEventProp,extractEventName:extractEventName,isCustomProp:isCustomProp,JSON2Hash:JSON2Hash,findChildren:findChildren,deepClone:deepClone});function _toConsumableArray(e){if(Array.isArray(e)){for(var t=0,n=Array(e.length);t<e.length;t++)n[t]=e[t];return n}return Array.from(e)}function createNode(e,t){for(var n=arguments,r=arguments.length,i=Array(r>2?r-2:0),o=2;o<r;o++)i[o-2]=n[o];if(!e)throw new TypeError("element() needs a type.");return t=t||{},i=Array.prototype.reduce.call(i||[],reduceChildren,[]),isFunction(e)?createThunkElement(e,t,i,e):{type:"native",tagName:e,attributes:t,children:i}}function createThunkElement(e,t,n,r){return{type:"thunk",fn:e,props:t,children:n,options:r}}function createTextElement(e){return{type:e?"text":"empty",nodeValue:e}}function reduceChildren(e,t){return isString(t)||isNumber(t)?e.push(createTextElement(t)):isNull(t)||isUndefined(t)?e.push(createTextElement()):Array.isArray(t)?e=[].concat(_toConsumableArray(e),_toConsumableArray(t.reduce(reduceChildren,[]))):e.push(t),e}function operBooleanProp(e,t,n,r){n?(e[r](t,n),e[t]=!0):(e[r](t),e[t]=!1)}function operAttribute(e,t,n,r){isCustomProp(t)||("className"===t?e[r]("class",n):"boolean"==typeof n?operBooleanProp(e,t,n,r):""!==n&&void 0!=n?e[r](t,n):e.removeAttribute(t))}function updateAttribute(e,t,n,r){n?r&&n===r||operAttribute(e,t,n,"setAttribute"):operAttribute(e,t,"boolean"==typeof n?n:r,"removeAttribute")}function updateAttributes(e,t){var n=arguments.length>2&&void 0!==arguments[2]?arguments[2]:{},r=Object.assign({},n,t);Object.keys(r).forEach(function(r){!isEventProp(r)&&updateAttribute(e,r,t[r],n[r])})}function addEventListeners(e,t){t&&Object.keys(t).forEach(function(n){isEventProp(n)&&e.addEventListener(extractEventName(n),t[n])})}function createTextNode(e){var t=isString(e)||isNumber(e)?e:"";return document.createTextNode(t)}function createThunk(e,t){var n=e.props,r=e.children,i=e.options.onCreate,o={children:r,props:n},a=void 0,u=void 0;if(isClass(e.fn))a=(u=new e.fn).render(o),u.$update=u.$update.bind(this,function(){t&&t("updateAll")});else try{a=e.fn(o)}catch(n){a=(u=new e.fn).render(o),u.$update=u.$update.bind(this,function(){t&&t("updateAll")})}if(!a)return"";var c=createElement(a);return addEventListeners(c,a.attributes),i&&i(o),e.state={vnode:a,$ins:u,model:o},c}function createSVGElement(e){return document.createElementNS("http://www.w3.org/2000/svg",e)}function createHTMLElement(e,t){var n=isSVG(e.tagName)?createSVGElement(e.tagName):document.createElement(e.tagName);return e.attributes&&updateAttributes(n,e.attributes),e.attributes&&addEventListeners(n,e.attributes),e.children.map(function(e){return createElement(e,t)}).forEach(n.appendChild.bind(n)),n}function createEmptyHTMLElement(){return document.createElement("noscript")}function createElement(e,t){if(!isNull(e)&&!isUndefined(e))switch(e.type){case"text":return createTextNode(e.nodeValue);case"thunk":return createThunk(e,t);case"empty":return createEmptyHTMLElement();case"native":return createHTMLElement(e,t)}}function updateElement(e,t,n){var r=arguments.length>3&&void 0!==arguments[3]?arguments[3]:0;if(e)return t===n&&"thunk"!=t.type?e:!isUndefined(t)&&isUndefined(n)?removeNode(e,t,n,r):isUndefined(t)&&!isUndefined(n)?(e.appendChild(createElement(n)),e):!isNull(t)&&isNull(n)||isNull(t)&&!isNull(n)?replaceNode(e,t,n,r):t.type!==n.type?replaceNode(e,t,n,r):isNative(n)?t.tagName!==n.tagName?replaceNode(e,t,n,r):(updateAttributes(e.childNodes[r],n.attributes,t.attributes),diffChildren(e,t,n,r)):isText(n)?(t.nodeValue!==n.nodeValue&&(e.childNodes[r].nodeValue=n.nodeValue),e):isThunk(n)?isSameThunk(t,n)?updateThunk(e,t,n,r):replaceThunk(e,t,n,r):void 0}function updateTarget(e,t,n){var r=arguments.length>3&&void 0!==arguments[3]?arguments[3]:0;return!isUndefined(t)&&isUndefined(n)?removeNode(e,t,n,r):isUndefined(t)&&!isUndefined(n)?(e.appendChild(createElement(n)),e):!isNull(t)&&isNull(n)||isNull(t)&&!isNull(n)||t.type!==n.type?replaceNode(e,t,n,r):isNative(n)?t.tagName!==n.tagName?replaceNode(e,t,n,r):(updateAttributes(e.childNodes[r],n.attributes,t.attributes),diffChildren(e,t,n,r)):isText(n)?(t.nodeValue!==n.nodeValue&&(e.childNodes[r].nodeValue=n.nodeValue),e):isThunk(n)?isSameThunk(t,n)?updateThunk(e,t,n,r):replaceThunk(e,t,n,r):void 0}function removeNode(e,t,n,r){removeThunk(t),e.removeChild(e.childNodes[r])}function replaceNode(e,t,n,r){var i=createElement(n);return removeThunk(t),e.replaceChild(i,e.childNodes[r]),i}function removeThunk(e){for(;isThunk(e);){var t=e.options.onRemove,n=e.state.model;t&&t(n),e=e.state.vnode}e.children&&e.children.forEach(removeThunk)}function diffChildren(e,t,n,r){var i=t.children||[],o=n.children||[],a=void 0,u=Array.prototype.slice.call(e.childNodes);for(a=0;a<i.length||a<o.length;a++)updateElement(u[r],i[a],o[a],a);return e}function updateThunk(e,t,n,r){var i=n.props,o={children:n.children,props:i},a=void 0;if(isClass(n.fn))a=t.state.$ins.render(o);else try{a=n.fn(o)}catch(e){a=t.state.$ins.render(o)}return updateElement(e,t.state.vnode,a,r),n.state={vnode:a,$ins:t.state.$ins,model:o},e}function replaceThunk(){return updateThunk.apply(null,arguments)}function initNode$1(e,t){var n=this,r=t||{node:null,oldNode:null,ins:null},i=r.node,o=r.oldNode,a=r.ins,u=function(t){return"updateAll"==t&&function(){var t=arguments.length>0&&void 0!==arguments[0]?arguments[0]:o,n=arguments.length>1&&void 0!==arguments[1]?arguments[1]:e;try{t=a&&a.render()}catch(e){}updateTarget(n,o,t),o=t}()};return t||(e.innerHTML=""),function(t){var r=t;if(r.children&&!r.children.length){var c=r,l=c.props,s={children:c.children,props:l};r=r.fn(s)}return"render"in t&&(r=t.render(),a=t,t.$update=t.$update.bind(n,function(){u("updateAll")})),i?function(){var t=arguments.length>0&&void 0!==arguments[0]?arguments[0]:o;return updateElement(arguments.length>1&&void 0!==arguments[1]?arguments[1]:e,o,t),{node:i,oldNode:o=t,ins:a}}(r):function(t){var n=arguments.length>1&&void 0!==arguments[1]?arguments[1]:e;return i=createElement(t,u),n.appendChild(i),{node:i,oldNode:o=t,ins:a}}(r)}}var _createClass=function(){function e(e,t){for(var n=0;n<t.length;n++){var r=t[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(e,r.key,r)}}return function(t,n,r){return n&&e(t.prototype,n),r&&e(t,r),t}}();function _classCallCheck(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}var component$1=function(){function e(){_classCallCheck(this,e)}return _createClass(e,[{key:"$update",value:function(e){e&&e()}},{key:"render",value:function(){}}]),e}(),_createClass$1=function(){function e(e,t){for(var n=0;n<t.length;n++){var r=t[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(e,r.key,r)}}return function(t,n,r){return n&&e(t.prototype,n),r&&e(t,r),t}}();function _classCallCheck$1(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}function _possibleConstructorReturn(e,t){if(!e)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return!t||"object"!=typeof t&&"function"!=typeof t?e:t}function _inherits(e,t){if("function"!=typeof t&&null!==t)throw new TypeError("Super expression must either be null or a function, not "+typeof t);e.prototype=Object.create(t&&t.prototype,{constructor:{value:e,enumerable:!1,writable:!0,configurable:!0}}),t&&(Object.setPrototypeOf?Object.setPrototypeOf(e,t):e.__proto__=t)}var ifBox=function(e){function t(){return _classCallCheck$1(this,t),_possibleConstructorReturn(this,(t.__proto__||Object.getPrototypeOf(t)).call(this))}return _inherits(t,component$1),_createClass$1(t,[{key:"render",value:function(e){var t=e.props,n=e.children,r=deepClone(n),i=findChildren(n,"else");i.index>=0&&r.splice(i.index,1);var o=deepClone(t);return delete o.cond,t.cond?createNode("div",o,r):createNode("div",o,i.children)}}]),t}(),_createClass$2=function(){function e(e,t){for(var n=0;n<t.length;n++){var r=t[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(e,r.key,r)}}return function(t,n,r){return n&&e(t.prototype,n),r&&e(t,r),t}}();function _classCallCheck$2(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}function _possibleConstructorReturn$1(e,t){if(!e)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return!t||"object"!=typeof t&&"function"!=typeof t?e:t}function _inherits$1(e,t){if("function"!=typeof t&&null!==t)throw new TypeError("Super expression must either be null or a function, not "+typeof t);e.prototype=Object.create(t&&t.prototype,{constructor:{value:e,enumerable:!1,writable:!0,configurable:!0}}),t&&(Object.setPrototypeOf?Object.setPrototypeOf(e,t):e.__proto__=t)}var forBox=function(e){function t(){return _classCallCheck$2(this,t),_possibleConstructorReturn$1(this,(t.__proto__||Object.getPrototypeOf(t)).call(this))}return _inherits$1(t,component$1),_createClass$2(t,[{key:"handlePath",value:function(e,t){var n=e.match(/__(.*?)__/g),r="";return n&&n.forEach(function(n){r=t[n.substring(2,n.length-2)],e=e.replace(n,void 0===r?"":r)}),e}},{key:"handleAttribute",value:function(e,t){var n=this;Object.keys(e).forEach(function(r){e[r]=n.handlePath(e[r],t)})}},{key:"handleChildren",value:function(e,t){var n=this;return e.forEach(function(e){e.nodeValue&&(e.nodeValue=n.handlePath(e.nodeValue,t)),e.attributes&&n.handleAttribute(e.attributes,t),e.children&&n.handleChildren(e.children,t)}),e}},{key:"render",value:function(e){var t=this,n=e.props,r=e.children;if(n.data){var i="",o=[];n.data.forEach(function(e,a){e.index=a,i=JSON2Hash(e,n.key||"item"),o=o.concat(t.handleChildren(deepClone(r),i))});var a=deepClone(n);return delete a.data,delete a.key,createNode("div",a,o)}return""}}]),t}(),_createClass$3=function(){function e(e,t){for(var n=0;n<t.length;n++){var r=t[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(e,r.key,r)}}return function(t,n,r){return n&&e(t.prototype,n),r&&e(t,r),t}}();function _classCallCheck$3(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}function _possibleConstructorReturn$2(e,t){if(!e)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return!t||"object"!=typeof t&&"function"!=typeof t?e:t}function _inherits$2(e,t){if("function"!=typeof t&&null!==t)throw new TypeError("Super expression must either be null or a function, not "+typeof t);e.prototype=Object.create(t&&t.prototype,{constructor:{value:e,enumerable:!1,writable:!0,configurable:!0}}),t&&(Object.setPrototypeOf?Object.setPrototypeOf(e,t):e.__proto__=t)}var initNode,elseBox=function(e){function t(){return _classCallCheck$3(this,t),_possibleConstructorReturn$2(this,(t.__proto__||Object.getPrototypeOf(t)).call(this))}return _inherits$2(t,component$1),_createClass$3(t,[{key:"render",value:function(e){var t=e.props,n=e.children;if(Object.keys(t).indexOf("cond")>=0){var r=findChildren(n,"else"),i=n;if(r.index>=0)deepClone(n).splice(r.index,1);var o=deepClone(t);return delete o.cond,t.cond?createNode("div",o,i):createNode("div",o,r.children)}return createNode("div",t,n)}}]),t}(),creatNode$$1=createNode,component=component$1,createDom=createElement,util=uti,IF=ifBox,FOR=forBox,ELSE=elseBox,app=function(e){for(var t,n=arguments,r=arguments.length,i=Array(r>1?r-1:0),o=1;o<r;o++)i[o-1]=n[o];return t=initNode(e)(createNode(i[0],null)),void i.map(function(n){n.$update=function(){t=initNode(e,t)(createNode(i[0],null))}})};export{creatNode$$1 as creatNode,initNode$1 as initNode,component,createDom,util,IF,FOR,ELSE,app};
+// lapp with IF/ELSE/FOR component - fed123.com
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+var isType = function isType(type) {
+    return function (value) {
+        return (typeof value === 'undefined' ? 'undefined' : _typeof(value)) === type;
+    };
+};
+var isVType = function isVType(type) {
+    return function (vnode) {
+        return vnode.type === type;
+    };
+};
+var isUndefined = function isUndefined(name) {
+    return isType('undefined')(name) && name == undefined;
+};
+var isString = isType('string');
+var isBool = isType('boolean');
+var isNumber = isType('number');
+var isFunction = function isFunction(name) {
+    return name.toString().match("function");
+};
+var isClass = function isClass(name) {
+    return name.toString().match("class ");
+}; //change 2 "class " to avoid match className
+var isNull = function isNull(value) {
+    return value === null;
+};
+var isNative = isVType('native');
+var isThunk = isVType('thunk');
+var isText = isVType('text');
+var isArray = Array.isArray;
+var isObj = function isObj(name) {
+    return Object.prototype.toString.call(name).slice(8, -1) == "Object";
+};
+var isSameThunk = function isSameThunk(pre, next) {
+    return pre.fn === next.fn;
+};
+
+var isSVG = function isSVG(name) {
+    return ["svg", "path", "animate"].indexOf(name) >= 0;
+};
+var isEventProp = function isEventProp(name) {
+    return (/^on/.test(name)
+    );
+};
+var extractEventName = function extractEventName(name) {
+    return name.slice(2).toLowerCase();
+};
+var isCustomProp = function isCustomProp(name) {
+    return isEventProp(name) || name === 'forceUpdate';
+};
+
+var JSON2Hash = function JSON2Hash(data, path) {
+    var res = {};
+    Object.keys(data).forEach(function (key) {
+        res[path + "." + key] = data[key];
+        if (_typeof(data[key]) == "object") {
+            res = Object.assign(res, JSON2Hash(data[key], path + "." + key));
+        }
+    });
+    return res;
+};
+
+var findChildren = function findChildren(children, key) {
+    var index = -1;
+    var _children = children.reverse().find(function (item, i) {
+        if (item.fn && item.fn.toString().match(key)) {
+            index = i;
+            return true;
+        }
+    });
+    return { index: index, children: _children };
+};
+
+//深度克隆
+var deepClone = function deepClone(obj) {
+    var result;
+    //确定result的类型
+    if (isObj(obj)) {
+        result = {};
+    } else if (isArray(obj)) {
+        result = [];
+    } else {
+        return obj;
+    }
+    for (var key in obj) {
+        var copy = obj[key];
+        if (isObj(copy)) {
+            result[key] = deepClone(copy); //递归调用
+        } else if (isArray(copy)) {
+            result[key] = deepClone(copy);
+        } else {
+            result[key] = obj[key];
+        }
+    }
+    return result;
+};
+
+var uti = Object.freeze({
+	isUndefined: isUndefined,
+	isString: isString,
+	isBool: isBool,
+	isNumber: isNumber,
+	isFunction: isFunction,
+	isClass: isClass,
+	isNull: isNull,
+	isNative: isNative,
+	isThunk: isThunk,
+	isText: isText,
+	isArray: isArray,
+	isObj: isObj,
+	isSameThunk: isSameThunk,
+	isSVG: isSVG,
+	isEventProp: isEventProp,
+	extractEventName: extractEventName,
+	isCustomProp: isCustomProp,
+	JSON2Hash: JSON2Hash,
+	findChildren: findChildren,
+	deepClone: deepClone
+});
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
+function createNode(type, attributes) {
+    var arguments$1 = arguments;
+
+    for (var _len = arguments.length, children = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+        children[_key - 2] = arguments$1[_key];
+    }
+
+    if (!type) { throw new TypeError('element() needs a type.'); }
+    attributes = attributes || {};
+    children = Array.prototype.reduce.call(children || [], reduceChildren, []);
+    if (isFunction(type)) {
+        return createThunkElement(type, attributes, children, type);
+    }
+    return {
+        type: 'native',
+        tagName: type,
+        attributes: attributes,
+        children: children
+    };
+}
+
+/**
+ * 生成vdom 对象
+ * @param fn render 函数
+ * @param props
+ * @param children
+ * @returns {{type: string, fn: *, attributes: *, children: *}}
+ */
+function createThunkElement(fn, props, children, options) {
+    return {
+        type: 'thunk',
+        fn: fn,
+        props: props,
+        children: children,
+        options: options
+    };
+}
+
+function createTextElement(text) {
+    return {
+        type: text ? 'text' : 'empty',
+        nodeValue: text
+    };
+}
+
+function reduceChildren(children, vnode) {
+    if (isString(vnode) || isNumber(vnode)) {
+        children.push(createTextElement(vnode));
+    } else if (isNull(vnode) || isUndefined(vnode)) {
+        children.push(createTextElement());
+    } else if (Array.isArray(vnode)) {
+        children = [].concat(_toConsumableArray(children), _toConsumableArray(vnode.reduce(reduceChildren, [])));
+    } else {
+        children.push(vnode);
+    }
+    return children;
+}
+
+/**
+ * 设置bool类型属性
+ * @param {*} node 节点
+ * @param {*} name 
+ * @param {*} value 
+ */
+function operBooleanProp(node, name, value, oper) {
+    if (value) {
+        node[oper](name, value);
+        node[name] = true;
+    } else {
+        node[oper](name);
+        node[name] = false;
+    }
+}
+
+/**
+ * 设置dom attribute
+ * @param node dom
+ * @param key  attribute key
+ * @param value attribue value
+ */
+function operAttribute(node, key, value, oper) {
+    if (isCustomProp(key)) {
+        return;
+    } else if (key === 'className') {
+        node[oper]('class', value);
+    } else if (typeof value === 'boolean') {
+        operBooleanProp(node, key, value, oper);
+    } else {
+        //remove attr when no value, fix bug tag a , if have href like <a href>, browser will reload
+        if (value !== "" && value != undefined) {
+            node[oper](key, value);
+        } else {
+            node.removeAttribute(key);
+        }
+    }
+}
+
+/**
+ * 更新属性值
+ * @param {*} node 
+ * @param {*} name 
+ * @param {*} newVal 
+ * @param {*} oldVal 
+ */
+function updateAttribute(node, name, newVal, oldVal) {
+    // console.log(newVal, oldVal)
+    if (!newVal) {
+        operAttribute(node, name, typeof newVal === 'boolean' ? newVal : oldVal, "removeAttribute");
+    } else if (!oldVal || newVal !== oldVal) {
+        operAttribute(node, name, newVal, "setAttribute");
+    }
+}
+/**
+ * 更新属性值
+ * @param {*}  
+ * @param {*} newProps 
+ * @param {*} oldProps 
+ */
+function updateAttributes($target, newProps) {
+    var oldProps = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
+    var props = Object.assign({}, oldProps, newProps);
+    Object.keys(props).forEach(function (name) {
+        !isEventProp(name) && updateAttribute($target, name, newProps[name], oldProps[name]);
+    });
+}
+
+/**
+ * add event handler
+ * @param {*}  
+ * @param {*} props 
+ */
+function addEventListeners($target, props) {
+    props && Object.keys(props).forEach(function (name) {
+        if (isEventProp(name)) {
+            $target.addEventListener(extractEventName(name), props[name]);
+        }
+    });
+}
+
+/**
+ * 生成文本节点
+ * @param text 节点值
+ * @returns {Text}
+ */
+function createTextNode(text) {
+    var value = isString(text) || isNumber(text) ? text : '';
+    return document.createTextNode(value);
+}
+
+/**
+ * thunk => real node
+ * @param vnode
+ */
+function createThunk(vnode, dispatch) {
+    var props = vnode.props,
+        children = vnode.children;
+    var onCreate = vnode.options.onCreate;
+
+    var model = {
+        children: children,
+        props: props
+        //render model
+    };var output = void 0,
+        ins = void 0;
+    if (isClass(vnode.fn)) {
+        ins = new vnode.fn();
+        output = ins.render(model);
+        ins.$update = ins.$update.bind(this, function () {
+            dispatch && dispatch("updateAll");
+        });
+    } else {
+        try {
+            output = vnode.fn(model);
+        } catch (e) {
+            // console.log(e)
+            //兼容对于打包工具会把class 打包出一个包裹的function，这时候会误判, 所以fu失败就还是采用new的形式
+            ins = new vnode.fn();
+            output = ins.render(model);
+            ins.$update = ins.$update.bind(this, function () {
+                dispatch && dispatch("updateAll");
+            });
+        }
+    }
+
+    if (!output) {
+        return "";
+    }
+    var DOMElement = createElement(output);
+    addEventListeners(DOMElement, output.attributes);
+    if (onCreate) { onCreate(model); }
+    vnode.state = {
+        vnode: output,
+        $ins: ins,
+        model: model
+    };
+    return DOMElement;
+}
+
+function createSVGElement(name) {
+    return document.createElementNS('http://www.w3.org/2000/svg', name);
+}
+
+/**
+ * html节点
+ * @param {*} vnode 
+ */
+function createHTMLElement(vnode, dispatch) {
+    var $el = isSVG(vnode.tagName) ? createSVGElement(vnode.tagName) : document.createElement(vnode.tagName);
+    vnode.attributes && updateAttributes($el, vnode.attributes);
+    vnode.attributes && addEventListeners($el, vnode.attributes);
+    vnode.children.map(function (item) {
+        return createElement(item, dispatch);
+    }).forEach($el.appendChild.bind($el));
+
+    return $el;
+}
+
+/**
+ * 生成空dom
+ * @returns {Element}
+ */
+function createEmptyHTMLElement() {
+    return document.createElement('noscript');
+}
+
+/**
+ * virtual dom -> dom
+ * @param vnode
+ */
+function createElement(vnode, dispatch) {
+    // console.log(this) //$parent
+    // console.log(vnode)
+    if (isNull(vnode) || isUndefined(vnode)) { return; }
+    switch (vnode.type) {
+        case 'text':
+            return createTextNode(vnode.nodeValue);
+        case 'thunk':
+            return createThunk(vnode, dispatch);
+        case 'empty':
+            return createEmptyHTMLElement();
+        case 'native':
+            return createHTMLElement(vnode, dispatch);
+    }
+}
+
+/**
+ * 更新node
+ * @param node -dom node,  parent node of vdom
+ * @param pre  -pre vnode
+ * @param next -next vnode
+ * @param index - child index in parent
+ * @returns node
+ */
+function updateElement(node, pre, next) {
+    var index = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 0;
+
+    if (!node) { return; }
+    if (pre === next && pre.type != "thunk") { return node; } //fix bug, shou test type after, because pre may undefined when create new node
+
+    if (!isUndefined(pre) && isUndefined(next)) {
+        return removeNode(node, pre, next, index);
+    }
+
+    if (isUndefined(pre) && !isUndefined(next)) {
+        node.appendChild(createElement(next));
+        return node;
+    }
+
+    if (!isNull(pre) && isNull(next) || isNull(pre) && !isNull(next)) {
+        return replaceNode(node, pre, next, index);
+    }
+
+    if (pre.type !== next.type) {
+        return replaceNode(node, pre, next, index);
+    }
+
+    if (isNative(next)) {
+        if (pre.tagName !== next.tagName) {
+            return replaceNode(node, pre, next, index);
+        }
+
+        updateAttributes(node.childNodes[index], next.attributes, pre.attributes);
+        return diffChildren(node, pre, next, index);
+    }
+
+    if (isText(next)) {
+        if (pre.nodeValue !== next.nodeValue) {
+            node.childNodes[index].nodeValue = next.nodeValue;
+        }
+        return node;
+    }
+
+    if (isThunk(next)) {
+        if (isSameThunk(pre, next)) {
+            return updateThunk(node, pre, next, index);
+        } else {
+            return replaceThunk(node, pre, next, index);
+        }
+    }
+}
+
+/**
+ * 更新node
+ * @param node -dom node,  parent node of vdom
+ * @param pre  -pre vnode
+ * @param next -next vnode
+ * @param index - child index in parent
+ * @returns node
+ */
+function updateTarget(node, pre, next) {
+    var index = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 0;
+
+
+    if (!isUndefined(pre) && isUndefined(next)) {
+        return removeNode(node, pre, next, index);
+    }
+
+    if (isUndefined(pre) && !isUndefined(next)) {
+        node.appendChild(createElement(next));
+        return node;
+    }
+
+    if (!isNull(pre) && isNull(next) || isNull(pre) && !isNull(next) || pre.type !== next.type) {
+        return replaceNode(node, pre, next, index);
+    }
+
+    if (isNative(next)) {
+        if (pre.tagName !== next.tagName) {
+            return replaceNode(node, pre, next, index);
+        }
+
+        updateAttributes(node.childNodes[index], next.attributes, pre.attributes);
+        return diffChildren(node, pre, next, index);
+    }
+
+    if (isText(next)) {
+        if (pre.nodeValue !== next.nodeValue) {
+            node.childNodes[index].nodeValue = next.nodeValue;
+        }
+        return node;
+    }
+
+    if (isThunk(next)) {
+        if (isSameThunk(pre, next)) {
+            return updateThunk(node, pre, next, index);
+        } else {
+            return replaceThunk(node, pre, next, index);
+        }
+    }
+}
+
+/**
+ * 删除节点
+ * @param node
+ * @param pre
+ * @param next
+ * @param index
+ */
+function removeNode(node, pre, next, index) {
+    removeThunk(pre);
+    node.removeChild(node.childNodes[index]);
+}
+
+/**
+ * replace节点
+ * @param node
+ * @param pre
+ * @param next
+ * @param index
+ */
+function replaceNode(node, pre, next, index) {
+    var newNode = createElement(next);
+    removeThunk(pre);
+    node.replaceChild(newNode, node.childNodes[index]);
+    return newNode;
+}
+
+/**
+ * thunk元素销毁时处理onRemove
+ * @param vnode
+ */
+function removeThunk(vnode) {
+    while (isThunk(vnode)) {
+        var onRemove = vnode.options.onRemove;
+        var model = vnode.state.model;
+
+        if (onRemove) { onRemove(model); }
+        vnode = vnode.state.vnode;
+    }
+    if (vnode.children) {
+        vnode.children.forEach(removeThunk);
+    }
+}
+
+/**
+ * 更新子节点
+ * @param node
+ * @param pre
+ * @param next
+ * @param index
+ */
+function diffChildren(node, pre, next, index) {
+    var preChildren = pre.children || [],
+        nextChildren = next.children || [],
+        i = void 0,
+        nodeChildren = Array.prototype.slice.call(node.childNodes);
+    // fix bug: node.children => node.childNodes, node.childNodes contains text node, but node.children doesn't
+    for (i = 0; i < preChildren.length || i < nextChildren.length; i++) {
+        updateElement(nodeChildren[index], preChildren[i], nextChildren[i], i);
+    }
+
+    return node;
+}
+
+/**
+* 更新thunk
+*/
+function updateThunk(node, pre, next, index) {
+    var props = next.props,
+        children = next.children;
+
+    var model = {
+        children: children,
+        props: props
+    };
+    var nextNode = void 0;
+
+    if (isClass(next.fn)) {
+        nextNode = pre.state.$ins.render(model);
+    } else {
+        try {
+            nextNode = next.fn(model);
+        } catch (e) {
+            //兼容对于打包工具会把class 打包出一个包裹的function，这时候会误判
+            nextNode = pre.state.$ins.render(model);
+        }
+    }
+    //更新块
+    updateElement(node, pre.state.vnode, nextNode, index);
+    next.state = {
+        vnode: nextNode,
+        $ins: pre.state.$ins,
+        model: model
+    };
+    return node;
+}
+
+function replaceThunk() {
+    return updateThunk.apply(null, arguments);
+}
+
+function initNode$1(container, _env) {
+    var _this = this;
+
+    var _ref = _env || { node: null, oldNode: null, ins: null },
+        node = _ref.node,
+        oldNode = _ref.oldNode,
+        ins = _ref.ins;
+
+    //派发更新操作
+
+
+    var dispatch = function dispatch(effect) {
+        return effect == "updateAll" && updateAll();
+    };
+    if (!_env) { container.innerHTML = ''; }
+    function create(vnode) {
+        var context = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : container;
+
+        node = createElement(vnode, dispatch);
+        context.appendChild(node);
+        oldNode = vnode;
+        return { node: node, oldNode: oldNode, ins: ins };
+    }
+
+    function update() {
+        var vnode = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : oldNode;
+        var context = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : container;
+
+        updateElement(context, oldNode, vnode);
+        oldNode = vnode;
+        return { node: node, oldNode: oldNode, ins: ins };
+    }
+
+    function updateAll() {
+        var vnode = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : oldNode;
+        var context = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : container;
+
+        // console.log("updateAll updateAll")
+        //add ins to fix bug: update the func element
+        try {
+            vnode = ins && ins.render();
+        } catch (e) {}
+        updateTarget(context, oldNode, vnode);
+        // update oldnode, or may cause diff vdom bug
+        oldNode = vnode;
+    }
+
+    return function (_ins) {
+        var vnode = _ins;
+        //兼容functional program
+        if (vnode.children && !vnode.children.length) {
+            var _vnode = vnode,
+                props = _vnode.props,
+                children = _vnode.children;
+
+            var model = {
+                children: children,
+                props: props
+            };
+            vnode = vnode.fn(model);
+        }
+        //兼容 class模块
+        if ("render" in _ins) {
+            vnode = _ins.render();
+            ins = _ins;
+            _ins.$update = _ins.$update.bind(_this, function () {
+                dispatch("updateAll");
+            });
+        }
+        return node ? update(vnode) : create(vnode);
+    };
+}
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) { descriptor.writable = true; } Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) { defineProperties(Constructor.prototype, protoProps); } if (staticProps) { defineProperties(Constructor, staticProps); } return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var component$1 = function () {
+    function component() {
+        _classCallCheck(this, component);
+    }
+
+    _createClass(component, [{
+        key: "$update",
+        value: function $update(dispatch) {
+            dispatch && dispatch();
+        }
+    }, {
+        key: "render",
+        value: function render() {}
+    }]);
+
+    return component;
+}();
+
+var _createClass$1 = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) { descriptor.writable = true; } Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) { defineProperties(Constructor.prototype, protoProps); } if (staticProps) { defineProperties(Constructor, staticProps); } return Constructor; }; }();
+
+function _classCallCheck$1(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) { Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } }
+
+var ifBox = function (_component) {
+    _inherits(ifBox, _component);
+
+    function ifBox() {
+        _classCallCheck$1(this, ifBox);
+
+        return _possibleConstructorReturn(this, (ifBox.__proto__ || Object.getPrototypeOf(ifBox)).call(this));
+    }
+
+    _createClass$1(ifBox, [{
+        key: "render",
+        value: function render(_ref) {
+            var props = _ref.props,
+                children = _ref.children;
+
+            var _children = deepClone(children);
+            var elseBox = findChildren(children, "else");
+            elseBox.index >= 0 && _children.splice(elseBox.index, 1);
+            var subprop = deepClone(props);
+            delete subprop["cond"];
+            if (props.cond) {
+                return l(
+                    "div",
+                    subprop,
+                    _children
+                );
+            } else {
+                return l(
+                    "div",
+                    subprop,
+                    elseBox.children
+                );
+            }
+        }
+    }]);
+
+    return ifBox;
+}(component$1);
+
+var _createClass$2 = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) { descriptor.writable = true; } Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) { defineProperties(Constructor.prototype, protoProps); } if (staticProps) { defineProperties(Constructor, staticProps); } return Constructor; }; }();
+
+function _classCallCheck$2(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn$1(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits$1(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) { Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } }
+
+var forBox = function (_component) {
+    _inherits$1(forBox, _component);
+
+    function forBox() {
+        _classCallCheck$2(this, forBox);
+
+        return _possibleConstructorReturn$1(this, (forBox.__proto__ || Object.getPrototypeOf(forBox)).call(this));
+    }
+
+    _createClass$2(forBox, [{
+        key: "handlePath",
+        value: function handlePath(item, hashData) {
+            var paths = item.match(/__(.*?)__/g);
+            var d = "";
+            paths && paths.forEach(function (path) {
+                d = hashData[path.substring(2, path.length - 2)];
+                item = item.replace(path, typeof d == "undefined" ? "" : d);
+            });
+            return item;
+        }
+    }, {
+        key: "handleAttribute",
+        value: function handleAttribute(attributes, hashData) {
+            var _this2 = this;
+
+            Object.keys(attributes).forEach(function (key) {
+                attributes[key] = _this2.handlePath(attributes[key], hashData);
+            });
+        }
+    }, {
+        key: "handleChildren",
+        value: function handleChildren(children, hashData) {
+            var _this3 = this;
+
+            children.forEach(function (item) {
+
+                if (item.nodeValue) {
+                    item.nodeValue = _this3.handlePath(item.nodeValue, hashData);
+                }
+                item.attributes && _this3.handleAttribute(item.attributes, hashData);
+                item.children && _this3.handleChildren(item.children, hashData);
+            });
+            return children;
+        }
+    }, {
+        key: "render",
+        value: function render(_ref) {
+            var _this4 = this;
+
+            var props = _ref.props,
+                children = _ref.children;
+
+            if (props.data) {
+                var hashData = "";
+                var allChidren = [];
+                props.data.forEach(function (item, i) {
+                    item.index = i;
+                    hashData = JSON2Hash(item, props.key || "item");
+                    allChidren = allChidren.concat(_this4.handleChildren(deepClone(children), hashData));
+                });
+                var subprop = deepClone(props);
+                delete subprop["data"];
+                delete subprop["key"];
+                return l(
+                    "div",
+                    subprop,
+                    allChidren
+                );
+            } else {
+                return "";
+            }
+        }
+    }]);
+
+    return forBox;
+}(component$1);
+
+var _createClass$3 = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) { descriptor.writable = true; } Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) { defineProperties(Constructor.prototype, protoProps); } if (staticProps) { defineProperties(Constructor, staticProps); } return Constructor; }; }();
+
+function _classCallCheck$3(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn$2(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits$2(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) { Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } }
+
+var elseBox = function (_component) {
+    _inherits$2(elseBox, _component);
+
+    function elseBox() {
+        _classCallCheck$3(this, elseBox);
+
+        return _possibleConstructorReturn$2(this, (elseBox.__proto__ || Object.getPrototypeOf(elseBox)).call(this));
+    }
+
+    _createClass$3(elseBox, [{
+        key: "render",
+        value: function render(_ref) {
+            var props = _ref.props,
+                children = _ref.children;
+
+            if (Object.keys(props).indexOf("cond") >= 0) {
+                var elseChildren = findChildren(children, "else");
+
+                var _children = children;
+                if (elseChildren.index >= 0) {
+                    var _children2 = deepClone(children);
+                    _children2.splice(elseChildren.index, 1);
+                }
+                var subprop = deepClone(props);
+                delete subprop["cond"];
+                if (props.cond) {
+
+                    return l(
+                        "div",
+                        subprop,
+                        _children
+                    );
+                } else {
+                    return l(
+                        "div",
+                        subprop,
+                        elseChildren.children
+                    );
+                }
+            } else {
+                return l(
+                    "div",
+                    props,
+                    children
+                );
+            }
+        }
+    }]);
+
+    return elseBox;
+}(component$1);
+
+var creatNode = createNode;
+var initNode = initNode$1;
+var component = component$1;
+var createDom = createElement;
+var util = uti;
+
+var IF = ifBox;
+var FOR = forBox;
+var ELSE = elseBox;
+
+var app = function app(root) {
+    var arguments$1 = arguments;
+
+    for (var _len = arguments.length, subviews = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+        subviews[_key - 1] = arguments$1[_key];
+    }
+
+    return function () {
+
+        var env = initNode(root)(createNode(subviews[0], null));
+        subviews.map(function (item) {
+            item.$update = function () {
+                env = initNode(root, env)(createNode(subviews[0], null));
+            };
+        });
+    }();
+};
+
+export { creatNode, initNode, component, createDom, util, IF, FOR, ELSE, app };

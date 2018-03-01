@@ -1,5 +1,5 @@
 import component from "../component"
-import creatNode from "../create"
+import l from "../create"
 import {deepClone, findChildren} from "../util"
 class ifBox extends component {
     constructor() {

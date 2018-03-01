@@ -1,5 +1,4 @@
-/** @jsx creatNode */
-import { creatNode, initNode } from "../src/index"
+import { l } from "../src/index"
 
 
 const state = {

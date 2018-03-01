@@ -8,25 +8,27 @@ export default {
     entry: 'src/index.js',
     dest: 'bin/index.js',
     banner: '// lapp - fed123.com',
-    footer:"",
+    footer: "",
     external: [],
     paths: {
         pjson: '../package.json'
     },
     plugins: [
-        babel({"presets": [[
-            "env",
-            {
-                "modules": false
-            }
-        ]],
-        "plugins": [
-            ["transform-react-jsx", {
-                "pragma": "creatNode"
-            }]
-            // "external-helpers"//注意这个参数不能加，加了之后模块exports有问题，坑坑坑
-        ]}),
+        babel({
+            "presets": [[
+                "env",
+                {
+                    "modules": false
+                }
+            ]],
+            "plugins": [
+                ["transform-react-jsx", {
+                    "pragma": "l"
+                }]
+                // "external-helpers"//注意这个参数不能加，加了之后模块exports有问题，坑坑坑
+            ]
+        }),
         buble(),
-        uglify({},minify)
+        uglify({ mangle: { toplevel: true } }, minify)
     ]
 }

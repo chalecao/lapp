@@ -1,4 +1,4 @@
-import { isEventProp, isBool, isCustomProp, extractEventName } from './util'
+import { isEventProp, isBool, extractEventName } from './util'
 
 /**
  * 设置bool类型属性
@@ -23,17 +23,17 @@ function operBooleanProp(node, name, value, oper) {
  * @param value attribue value
  */
 export function operAttribute(node, key, value, oper) {
-    if (isCustomProp(key)) {
+    if (isEventProp(key)) {
         return;
     } else if (key === 'className') {
         node[oper]('class', value);
-    } else if (typeof value === 'boolean') {
+    } else if (isBool(value)) {
         operBooleanProp(node, key, value, oper);
     } else {
         //remove attr when no value, fix bug tag a , if have href like <a href>, browser will reload
-        if (value !== "" && value != undefined) {
+        if (value != undefined && value.length) {
             node[oper](key, value);
-        }else{
+        } else {
             node.removeAttribute(key);
         }
     }
@@ -49,7 +49,7 @@ export function operAttribute(node, key, value, oper) {
 export function updateAttribute(node, name, newVal, oldVal) {
     // console.log(newVal, oldVal)
     if (!newVal) {
-        operAttribute(node, name, typeof newVal === 'boolean'?newVal:oldVal, "removeAttribute");
+        operAttribute(node, name, isBool(newVal) ? newVal : oldVal, "removeAttribute");
     } else if (!oldVal || newVal !== oldVal) {
         operAttribute(node, name, newVal, "setAttribute");
     }

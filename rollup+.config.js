@@ -22,11 +22,11 @@ export default {
         ]],
         "plugins": [
             ["transform-react-jsx", {
-                "pragma": "creatNode"
+                "pragma": "l"
             }]
             // "external-helpers"//注意这个参数不能加，加了之后模块exports有问题，坑坑坑
         ]}),
         buble(),
-        uglify({},minify)
+        // uglify({},minify)
     ]
 }

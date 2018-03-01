@@ -17,7 +17,7 @@ var isUndefined = function isUndefined(name) {
     return isType('undefined')(name) && name == undefined;
 };
 var isString = isType('string');
-
+var isBool = isType('boolean');
 var isNumber = isType('number');
 var isFunction = function isFunction(name) {
     return name.toString().match("function");
@@ -48,9 +48,6 @@ var isEventProp = function isEventProp(name) {
 };
 var extractEventName = function extractEventName(name) {
     return name.slice(2).toLowerCase();
-};
-var isCustomProp = function isCustomProp(name) {
-    return isEventProp(name) || name === 'forceUpdate';
 };
 
 var JSON2Hash = function JSON2Hash(data, path) {
@@ -101,16 +98,17 @@ var deepClone = function deepClone(obj) {
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
-function createNode(type, attributes) {
+function createNode(type) {
     for (var _len = arguments.length, children = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
         children[_key - 2] = arguments[_key];
     }
 
-    if (!type) throw new TypeError('element() needs a type.');
-    attributes = attributes || {};
-    children = Array.prototype.reduce.call(children || [], reduceChildren, []);
+    var attributes = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+    if (!type) return;
+    children = Array.prototype.reduce.call(children, reduceChildren, []);
     if (isFunction(type)) {
-        return createThunkElement(type, attributes, children, type);
+        return createThunk(type, attributes, children, type);
     }
     return {
         type: 'native',
@@ -127,7 +125,7 @@ function createNode(type, attributes) {
  * @param children
  * @returns {{type: string, fn: *, attributes: *, children: *}}
  */
-function createThunkElement(fn, props, children, options) {
+function createThunk(fn, props, children, options) {
     return {
         type: 'thunk',
         fn: fn,
@@ -137,7 +135,7 @@ function createThunkElement(fn, props, children, options) {
     };
 }
 
-function createTextElement(text) {
+function createText(text) {
     return {
         type: text ? 'text' : 'empty',
         nodeValue: text
@@ -146,16 +144,38 @@ function createTextElement(text) {
 
 function reduceChildren(children, vnode) {
     if (isString(vnode) || isNumber(vnode)) {
-        children.push(createTextElement(vnode));
+        children.push(createText(vnode));
     } else if (isNull(vnode) || isUndefined(vnode)) {
-        children.push(createTextElement());
-    } else if (Array.isArray(vnode)) {
+        children.push(createText());
+    } else if (isArray(vnode)) {
         children = [].concat(_toConsumableArray(children), _toConsumableArray(vnode.reduce(reduceChildren, [])));
     } else {
         children.push(vnode);
     }
     return children;
 }
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var component$1 = function () {
+    function component() {
+        _classCallCheck(this, component);
+    }
+
+    _createClass(component, [{
+        key: "$update",
+        value: function $update(dispatch) {
+            dispatch && dispatch();
+        }
+    }, {
+        key: "render",
+        value: function render() {}
+    }]);
+
+    return component;
+}();
 
 /**
  * 设置bool类型属性
@@ -180,15 +200,15 @@ function operBooleanProp(node, name, value, oper) {
  * @param value attribue value
  */
 function operAttribute(node, key, value, oper) {
-    if (isCustomProp(key)) {
+    if (isEventProp(key)) {
         return;
     } else if (key === 'className') {
         node[oper]('class', value);
-    } else if (typeof value === 'boolean') {
+    } else if (isBool(value)) {
         operBooleanProp(node, key, value, oper);
     } else {
         //remove attr when no value, fix bug tag a , if have href like <a href>, browser will reload
-        if (value !== "" && value != undefined) {
+        if (value != undefined && value.length) {
             node[oper](key, value);
         } else {
             node.removeAttribute(key);
@@ -204,9 +224,9 @@ function operAttribute(node, key, value, oper) {
  * @param {*} oldVal 
  */
 function updateAttribute(node, name, newVal, oldVal) {
-    console.log(newVal, oldVal);
+    // console.log(newVal, oldVal)
     if (!newVal) {
-        operAttribute(node, name, typeof newVal === 'boolean' ? newVal : oldVal, "removeAttribute");
+        operAttribute(node, name, isBool(newVal) ? newVal : oldVal, "removeAttribute");
     } else if (!oldVal || newVal !== oldVal) {
         operAttribute(node, name, newVal, "setAttribute");
     }
@@ -253,7 +273,7 @@ function createTextNode(text) {
  * thunk => real node
  * @param vnode
  */
-function createThunk(vnode, dispatch) {
+function createThunk$1(vnode, dispatch) {
     var props = vnode.props,
         children = vnode.children;
     var onCreate = vnode.options.onCreate;
@@ -337,7 +357,7 @@ function createElement(vnode, dispatch) {
         case 'text':
             return createTextNode(vnode.nodeValue);
         case 'thunk':
-            return createThunk(vnode, dispatch);
+            return createThunk$1(vnode, dispatch);
         case 'empty':
             return createEmptyHTMLElement();
         case 'native':
@@ -422,11 +442,7 @@ function updateTarget(node, pre, next) {
         return node;
     }
 
-    if (!isNull(pre) && isNull(next) || isNull(pre) && !isNull(next)) {
-        return replaceNode(node, pre, next, index);
-    }
-
-    if (pre.type !== next.type) {
+    if (!isNull(pre) && isNull(next) || isNull(pre) && !isNull(next) || pre.type !== next.type) {
         return replaceNode(node, pre, next, index);
     }
 
@@ -509,8 +525,8 @@ function diffChildren(node, pre, next, index) {
     var preChildren = pre.children || [],
         nextChildren = next.children || [],
         i = void 0,
-        nodeChildren = Array.prototype.slice.call(node.childNodes); // fix bug: node.children => node.childNodes, node.childNodes contains text node, but node.children doesn't
-
+        nodeChildren = Array.prototype.slice.call(node.childNodes);
+    // fix bug: node.children => node.childNodes, node.childNodes contains text node, but node.children doesn't
     for (i = 0; i < preChildren.length || i < nextChildren.length; i++) {
         updateElement(nodeChildren[index], preChildren[i], nextChildren[i], i);
     }
@@ -555,7 +571,7 @@ function replaceThunk() {
     return updateThunk.apply(null, arguments);
 }
 
-function initNode$1(container, _env) {
+function initNode(container, _env) {
     var _this = this;
 
     var _ref = _env || { node: null, oldNode: null, ins: null },
@@ -569,9 +585,7 @@ function initNode$1(container, _env) {
     var dispatch = function dispatch(effect) {
         return effect == "updateAll" && updateAll();
     };
-
     if (!_env) container.innerHTML = '';
-
     function create(vnode) {
         var context = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : container;
 
@@ -629,28 +643,6 @@ function initNode$1(container, _env) {
         return node ? update(vnode) : create(vnode);
     };
 }
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var component$1 = function () {
-    function component() {
-        _classCallCheck(this, component);
-    }
-
-    _createClass(component, [{
-        key: "$update",
-        value: function $update(dispatch) {
-            dispatch && dispatch();
-        }
-    }, {
-        key: "render",
-        value: function render() {}
-    }]);
-
-    return component;
-}();
 
 var _createClass$1 = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -807,7 +799,7 @@ var elseBox = function (_component) {
             var props = _ref.props,
                 children = _ref.children;
 
-            if (Object.keys(props).indexOf("cond") >= 0) {
+            if (props && Object.keys(props).indexOf("cond") >= 0) {
                 var elseChildren = findChildren(children, "else");
 
                 var _children = children;
@@ -844,10 +836,7 @@ var elseBox = function (_component) {
     return elseBox;
 }(component$1);
 
-var creatNode$$1 = createNode;
-var initNode = initNode$1;
-
-
+var l = createNode;
 
 
 var IF = ifBox;
@@ -860,19 +849,23 @@ var app = function app(root) {
     }
 
     return function () {
-
-        var env = initNode(root)(createNode(subviews[0], null));
-        subviews.map(function (item) {
-            item.$update = function () {
-                env = initNode(root, env)(createNode(subviews[0], null));
-            };
-        });
+        if ("render" in subviews[0]) {
+            initNode(root)(subviews[0]);
+        } else {
+            var env = initNode(root)(createNode(subviews[0], null));
+            subviews.map(function (item) {
+                item.$update = function () {
+                    env = initNode(root, env)(createNode(subviews[0], null));
+                };
+            });
+        }
     }();
 };
 
+var l$1 = createNode;
+
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-/** @jsx creatNode */
 var state$1 = {
     count: 0
 };
@@ -887,7 +880,7 @@ var actions$1 = {
 var MyButtonView = function MyButtonView(_ref) {
     var props = _ref.props,
         children = _ref.children;
-    return creatNode$$1(
+    return l$1(
         "button",
         _extends({ onClick: actions$1.addCount }, props),
         children,
@@ -895,7 +888,6 @@ var MyButtonView = function MyButtonView(_ref) {
     );
 };
 
-/** @jsx creatNode */
 var state = {
     aa: -1,
     bb: -1,
@@ -920,18 +912,18 @@ var actions$$1 = {
     compute: function compute(data) {
         var dd = [];
         state.data.forEach(function (item, index) {
-            dd.push(creatNode$$1(
+            dd.push(l(
                 "div",
                 null,
-                creatNode$$1(
+                l(
                     "div",
                     { "class": "title" },
                     item.name
                 ),
-                creatNode$$1(
+                l(
                     IF,
                     { cond: item.href == "22" },
-                    creatNode$$1(
+                    l(
                         "div",
                         { "class": "spin" },
                         item.href
@@ -946,72 +938,73 @@ var actions$$1 = {
 var BoxView = function BoxView(_ref) {
     var props = _ref.props,
         children = _ref.children;
-    return creatNode$$1(
+    return l(
         "ul",
         { style: "list-style: none;" },
-        creatNode$$1(
+        "\xA5",
+        l(
             "li",
             { className: "item", onClick: function onClick() {
                     return alert('hi!');
                 } },
             "item 1"
         ),
-        creatNode$$1(
+        l(
             "li",
             { className: "item" },
-            creatNode$$1("input", { type: "checkbox", checked: state.checked, onChange: actions$$1.handleCheck }),
-            creatNode$$1("input", { type: "text", onInput: actions$$1.log })
+            l("input", { type: "checkbox", checked: state.checked, onChange: actions$$1.handleCheck }),
+            l("input", { type: "text", style: "border:1px solid #f40000;", onInput: actions$$1.log })
         ),
-        creatNode$$1(
+        l(
             "li",
             { onClick: actions$$1.handleClick, forceUpdate: true },
             "text"
         ),
-        creatNode$$1(
+        l(
             MyButtonView,
             { className: "button" },
             "hello, button"
         ),
-        creatNode$$1(
+        l(
             IF,
             { "class": "aaa", cond: state.aa > 0 },
             "aa \u5927\u4E8E 0",
-            creatNode$$1(
+            l(
                 ELSE,
                 { cond: state.bb > 0 },
                 "aa \u5C0F\u4E8E 0 bb \u5927\u4E8E 0",
-                creatNode$$1(
+                l(
                     ELSE,
                     null,
                     "aa \u5C0F\u4E8E 0 bb \u5C0F\u4E8E 0"
                 )
             )
         ),
-        creatNode$$1(
+        l(
             IF,
             { cond: state.aa < 0 },
             "sdfsdfsfsd",
-            creatNode$$1(
+            l(
                 FOR,
                 { "class": "bbb", data: state.data, key: "item" },
-                creatNode$$1(
+                l(
                     "div",
                     null,
-                    creatNode$$1(
+                    l(
                         "a",
                         { href: "__item.href__" },
                         "__item.name__ -  __item.index__ __item.test__"
                     ),
-                    creatNode$$1(
+                    l(
                         "div",
                         null,
-                        creatNode$$1(
+                        l(
                             "span",
                             null,
                             "__item.href__ "
                         )
                     ),
-                    creatNode$$1(
+                    l(
                         IF,
                         { cond: state.aa < 0 },
                         "aa \u5C0F\u4E8E 0"

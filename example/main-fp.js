@@ -1,5 +1,4 @@
-/** @jsx creatNode */
-import { creatNode, initNode, app, IF, ELSE, FOR } from "../src/index"
+import { l, app, IF, ELSE, FOR } from "../src/index+"
 import { MyButtonView, actions as MyButtonAction } from "./mybutton-fp"
 
 let state = {
@@ -18,7 +17,7 @@ const actions = {
         state.data.push({ name: "77", href: "88" })
         BoxView.$update()
     },
-    handleCheck:(e)=>{
+    handleCheck: (e) => {
         state.checked = !state.checked
         console.log(state.checked)
         BoxView.$update()
@@ -41,10 +40,11 @@ const actions = {
 }
 
 const BoxView = ({ props, children }) => (<ul style="list-style: none;">
+    &yen;
     <li className="item" onClick={() => alert('hi!')}>item 1</li>
     <li className="item">
-        <input type="checkbox" checked={state.checked} onChange={actions.handleCheck}/>
-        <input type="text" onInput={actions.log} />
+        <input type="checkbox" checked={state.checked} onChange={actions.handleCheck} />
+        <input type="text" style="border:1px solid #f40000;" onInput={actions.log} />
     </li>
     <li onClick={actions.handleClick} forceUpdate={true}>text</li>
     <MyButtonView className="button">hello, button</MyButtonView>
@@ -61,7 +61,7 @@ const BoxView = ({ props, children }) => (<ul style="list-style: none;">
     </IF>
     <IF cond={state.aa < 0}>
         sdfsdfsfsd
-            <FOR  class="bbb" data={state.data} key="item" >
+            <FOR class="bbb" data={state.data} key="item" >
             <div>
                 <a href="__item.href__" >__item.name__ -  __item.index__ __item.test__</a>
                 <div><span>__item.href__ </span></div>

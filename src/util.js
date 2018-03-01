@@ -11,13 +11,12 @@ export const isNative = isVType('native')
 export const isThunk = isVType('thunk')
 export const isText = isVType('text')
 export const isArray = Array.isArray
-export const isObj = (name) => Object.prototype.toString.call(name).slice(8,-1) == "Object"
+export const isObj = (name) => Object.prototype.toString.call(name).slice(8, -1) == "Object"
 export const isSameThunk = (pre, next) => pre.fn === next.fn
 
-export const isSVG = (name) => ["svg","path","animate"].indexOf(name)>=0
+export const isSVG = (name) => ["svg", "path", "animate"].indexOf(name) >= 0
 export const isEventProp = (name) => /^on/.test(name)
 export const extractEventName = (name) => name.slice(2).toLowerCase()
-export const isCustomProp = (name) => isEventProp(name) || name === 'forceUpdate'
 
 export const JSON2Hash = (data, path) => {
     let res = {};
@@ -30,7 +29,7 @@ export const JSON2Hash = (data, path) => {
     return res;
 }
 
-export const findChildren = (children, key) =>{
+export const findChildren = (children, key) => {
     let index = -1;
     let _children = children.reverse().find((item, i) => {
         if (item.fn && item.fn.toString().match(key)) {
