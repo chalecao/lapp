@@ -1,6 +1,6 @@
 {
   "name": "lapp",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "lapp = little app, lapp mainly focus on ui component which can be easily developed with OOP or functional programing!",
   "main": "src/index.js",
   "scripts": {
