@@ -4,7 +4,7 @@ import { updateElement, updateTarget } from "./updateElement"
 
 export default function initNode(container, _env) {
     let { node, oldNode, ins } = _env || { node: null, oldNode: null, ins: null };
-
+    container = typeof container == 'string' ? document.querySelector(container) : container;
     //派发更新操作
     let dispatch = effect => effect == "updateAll" && updateAll()
     if (!_env) container.innerHTML = ''

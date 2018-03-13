@@ -27,6 +27,6 @@ export default {
             // "external-helpers"//注意这个参数不能加，加了之后模块exports有问题，坑坑坑
         ]}),
         buble(),
-        // uglify({},minify)
+        uglify({ mangle: { toplevel: true } }, minify)
     ]
 }

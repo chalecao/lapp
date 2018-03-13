@@ -208,7 +208,7 @@ function operAttribute(node, key, value, oper) {
         operBooleanProp(node, key, value, oper);
     } else {
         //remove attr when no value, fix bug tag a , if have href like <a href>, browser will reload
-        if (value != undefined && value.length) {
+        if (value != undefined && ("" + value).length) {
             node[oper](key, value);
         } else {
             node.removeAttribute(key);
@@ -579,9 +579,8 @@ function initNode(container, _env) {
         oldNode = _ref.oldNode,
         ins = _ref.ins;
 
+    container = typeof container == 'string' ? document.querySelector(container) : container;
     //派发更新操作
-
-
     var dispatch = function dispatch(effect) {
         return effect == "updateAll" && updateAll();
     };
@@ -898,6 +897,7 @@ var state = {
 var actions$$1 = {
     log: function log(e) {
         console.log(e.target.value);
+        state.inputVal = e.target.value;
         actions$1.addCount();
     },
     handleClick: function handleClick() {
@@ -953,7 +953,12 @@ var BoxView = function BoxView(_ref) {
             "li",
             { className: "item" },
             l("input", { type: "checkbox", checked: state.checked, onChange: actions$$1.handleCheck }),
-            l("input", { type: "text", style: "border:1px solid #f40000;", onInput: actions$$1.log })
+            l("input", { type: "text", style: "border:1px solid #f40000;", onInput: actions$$1.log }),
+            l(
+                "span",
+                null,
+                state.inputVal
+            )
         ),
         l(
             "li",

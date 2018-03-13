@@ -31,7 +31,7 @@ export function operAttribute(node, key, value, oper) {
         operBooleanProp(node, key, value, oper);
     } else {
         //remove attr when no value, fix bug tag a , if have href like <a href>, browser will reload
-        if (value != undefined && value.length) {
+        if (value != undefined && ("" + value).length) {
             node[oper](key, value);
         } else {
             node.removeAttribute(key);

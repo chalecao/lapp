@@ -11,6 +11,7 @@ let state = {
 const actions = {
     log: (e) => {
         console.log(e.target.value);
+        state.inputVal = e.target.value
         MyButtonAction.addCount()
     },
     handleClick: () => {
@@ -45,6 +46,7 @@ const BoxView = ({ props, children }) => (<ul style="list-style: none;">
     <li className="item">
         <input type="checkbox" checked={state.checked} onChange={actions.handleCheck} />
         <input type="text" style="border:1px solid #f40000;" onInput={actions.log} />
+        <p>{state.inputVal}</p>
     </li>
     <li onClick={actions.handleClick} forceUpdate={true}>text</li>
     <MyButtonView className="button">hello, button</MyButtonView>
