@@ -2,7 +2,7 @@
   "name": "lapp",
   "version": "1.0.3",
   "description": "lapp = little app, lapp mainly focus on ui component which can be easily developed with OOP or functional programing!",
-  "main": "src/index.js",
+  "main": "bin/index.js",
   "scripts": {
     "run:example": "gulp main && min-http .",
     "server": "min-http .",
