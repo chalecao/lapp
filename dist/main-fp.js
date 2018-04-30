@@ -159,7 +159,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var component$1 = function () {
+var component = function () {
     function component() {
         _classCallCheck(this, component);
     }
@@ -176,6 +176,27 @@ var component$1 = function () {
 
     return component;
 }();
+
+/**
+ * add event handler
+ * @param {*}  
+ * @param {*} props 
+ */
+function addEventListeners($target, props) {
+    Object.keys(props).forEach(function (name) {
+        if (isEventProp(name)) {
+            $target.addEventListener(extractEventName(name), props[name]);
+        }
+    });
+}
+
+function removeEventListeners($target, props) {
+    Object.keys(props).forEach(function (name) {
+        if (isEventProp(name)) {
+            $target.removeEventListener(extractEventName(name), props[name]);
+        }
+    });
+}
 
 /**
  * 设置bool类型属性
@@ -242,19 +263,12 @@ function updateAttributes($target, newProps) {
 
     var props = Object.assign({}, oldProps, newProps);
     Object.keys(props).forEach(function (name) {
-        !isEventProp(name) && updateAttribute($target, name, newProps[name], oldProps[name]);
-    });
-}
-
-/**
- * add event handler
- * @param {*}  
- * @param {*} props 
- */
-function addEventListeners($target, props) {
-    props && Object.keys(props).forEach(function (name) {
-        if (isEventProp(name)) {
-            $target.addEventListener(extractEventName(name), props[name]);
+        if (!isEventProp(name)) {
+            updateAttribute($target, name, newProps[name], oldProps[name]);
+        } else {
+            //移除事件，重新绑定事件
+            removeEventListeners($target, { name: oldProps[name] });
+            addEventListeners($target, { name: newProps[name] });
         }
     });
 }
@@ -380,6 +394,7 @@ function updateElement(node, pre, next) {
     if (pre === next && pre.type != "thunk") return node; //fix bug, shou test type after, because pre may undefined when create new node
 
     if (!isUndefined(pre) && isUndefined(next)) {
+        //bug, remove the node in pre with index
         return removeNode(node, pre, next, index);
     }
 
@@ -393,56 +408,6 @@ function updateElement(node, pre, next) {
     }
 
     if (pre.type !== next.type) {
-        return replaceNode(node, pre, next, index);
-    }
-
-    if (isNative(next)) {
-        if (pre.tagName !== next.tagName) {
-            return replaceNode(node, pre, next, index);
-        }
-
-        updateAttributes(node.childNodes[index], next.attributes, pre.attributes);
-        return diffChildren(node, pre, next, index);
-    }
-
-    if (isText(next)) {
-        if (pre.nodeValue !== next.nodeValue) {
-            node.childNodes[index].nodeValue = next.nodeValue;
-        }
-        return node;
-    }
-
-    if (isThunk(next)) {
-        if (isSameThunk(pre, next)) {
-            return updateThunk(node, pre, next, index);
-        } else {
-            return replaceThunk(node, pre, next, index);
-        }
-    }
-}
-
-/**
- * 更新node
- * @param node -dom node,  parent node of vdom
- * @param pre  -pre vnode
- * @param next -next vnode
- * @param index - child index in parent
- * @returns node
- */
-function updateTarget(node, pre, next) {
-    var index = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 0;
-
-
-    if (!isUndefined(pre) && isUndefined(next)) {
-        return removeNode(node, pre, next, index);
-    }
-
-    if (isUndefined(pre) && !isUndefined(next)) {
-        node.appendChild(createElement(next));
-        return node;
-    }
-
-    if (!isNull(pre) && isNull(next) || isNull(pre) && !isNull(next) || pre.type !== next.type) {
         return replaceNode(node, pre, next, index);
     }
 
@@ -525,10 +490,12 @@ function diffChildren(node, pre, next, index) {
     var preChildren = pre.children || [],
         nextChildren = next.children || [],
         i = void 0,
-        nodeChildren = Array.prototype.slice.call(node.childNodes);
+        nodeChildren = Array.prototype.slice.call(node.childNodes),
+        nl = nextChildren.length;
     // fix bug: node.children => node.childNodes, node.childNodes contains text node, but node.children doesn't
-    for (i = 0; i < preChildren.length || i < nextChildren.length; i++) {
-        updateElement(nodeChildren[index], preChildren[i], nextChildren[i], i);
+
+    for (i = 0; i < preChildren.length || i < nl; i++) {
+        updateElement(nodeChildren[index], preChildren[i], nextChildren[i], i >= nl ? nl : i);
     }
 
     return node;
@@ -612,7 +579,8 @@ function initNode(container, _env) {
         try {
             vnode = ins && ins.render();
         } catch (e) {}
-        updateTarget(context, oldNode, vnode);
+        // updateTarget(context, oldNode, vnode)
+        updateElement(context, oldNode, vnode);
         // update oldnode, or may cause diff vdom bug
         oldNode = vnode;
     }
@@ -688,7 +656,7 @@ var ifBox = function (_component) {
     }]);
 
     return ifBox;
-}(component$1);
+}(component);
 
 var _createClass$2 = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -773,7 +741,7 @@ var forBox = function (_component) {
     }]);
 
     return forBox;
-}(component$1);
+}(component);
 
 var _createClass$3 = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -833,10 +801,9 @@ var elseBox = function (_component) {
     }]);
 
     return elseBox;
-}(component$1);
+}(component);
 
 var l = createNode;
-
 
 var IF = ifBox;
 var FOR = forBox;
@@ -865,13 +832,13 @@ var l$1 = createNode;
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-var state$1 = {
+var state = {
     count: 0
 };
 
-var actions$1 = {
+var actions = {
     addCount: function addCount() {
-        state$1.count++;
+        state.count++;
         MyButtonView.$update();
     }
 };
@@ -881,37 +848,37 @@ var MyButtonView = function MyButtonView(_ref) {
         children = _ref.children;
     return l$1(
         "button",
-        _extends({ onClick: actions$1.addCount }, props),
+        _extends({ onClick: actions.addCount }, props),
         children,
-        state$1.count
+        state.count
     );
 };
 
-var state = {
+var state$1 = {
     aa: -1,
     bb: -1,
     checked: true,
     data: [{ name: "11", href: "22" }, { name: "33", href: "44" }]
 };
 
-var actions$$1 = {
+var actions$1 = {
     log: function log(e) {
         console.log(e.target.value);
-        state.inputVal = e.target.value;
-        actions$1.addCount();
+        state$1.inputVal = e.target.value;
+        actions.addCount();
     },
     handleClick: function handleClick() {
-        state.data.push({ name: "77", href: "88" });
+        state$1.data.push({ name: "77", href: "88" });
         BoxView.$update();
     },
     handleCheck: function handleCheck(e) {
-        state.checked = !state.checked;
-        console.log(state.checked);
+        state$1.checked = !state$1.checked;
+        console.log(state$1.checked);
         BoxView.$update();
     },
     compute: function compute(data) {
         var dd = [];
-        state.data.forEach(function (item, index) {
+        state$1.data.forEach(function (item, index) {
             dd.push(l(
                 "div",
                 null,
@@ -952,17 +919,17 @@ var BoxView = function BoxView(_ref) {
         l(
             "li",
             { className: "item" },
-            l("input", { type: "checkbox", checked: state.checked, onChange: actions$$1.handleCheck }),
-            l("input", { type: "text", style: "border:1px solid #f40000;", onInput: actions$$1.log }),
+            l("input", { type: "checkbox", checked: state$1.checked, onChange: actions$1.handleCheck }),
+            l("input", { type: "text", style: "border:1px solid #f40000;", onInput: actions$1.log }),
             l(
-                "span",
+                "p",
                 null,
-                state.inputVal
+                state$1.inputVal
             )
         ),
         l(
             "li",
-            { onClick: actions$$1.handleClick, forceUpdate: true },
+            { onClick: actions$1.handleClick, forceUpdate: true },
             "text"
         ),
         l(
@@ -972,11 +939,11 @@ var BoxView = function BoxView(_ref) {
         ),
         l(
             IF,
-            { "class": "aaa", cond: state.aa > 0 },
+            { "class": "aaa", cond: state$1.aa > 0 },
             "aa \u5927\u4E8E 0",
             l(
                 ELSE,
-                { cond: state.bb > 0 },
+                { cond: state$1.bb > 0 },
                 "aa \u5C0F\u4E8E 0 bb \u5927\u4E8E 0",
                 l(
                     ELSE,
@@ -987,11 +954,11 @@ var BoxView = function BoxView(_ref) {
         ),
         l(
             IF,
-            { cond: state.aa < 0 },
+            { cond: state$1.aa < 0 },
             "sdfsdfsfsd",
             l(
                 FOR,
-                { "class": "bbb", data: state.data, key: "item" },
+                { "class": "bbb", data: state$1.data, key: "item" },
                 l(
                     "div",
                     null,
@@ -1011,13 +978,13 @@ var BoxView = function BoxView(_ref) {
                     ),
                     l(
                         IF,
-                        { cond: state.aa < 0 },
+                        { cond: state$1.aa < 0 },
                         "aa \u5C0F\u4E8E 0"
                     )
                 )
             )
         ),
-        actions$$1.compute(state.data)
+        actions$1.compute(state$1.data)
     );
 };
 

@@ -15,5 +15,6 @@ export const app = (root, ...subviews) => (() => {
                 env = init(root, env)(creat(subviews[0], null))
             }
         })
+        return subviews
     }
 })()

@@ -10,10 +10,11 @@ import { updateAttributes } from "./attribute"
  * @returns node
  */
 export function updateElement(node, pre, next, index = 0) {
-    if(!node) return;
-    if ( pre === next && pre.type != "thunk") return node //fix bug, shou test type after, because pre may undefined when create new node
+    if (!node) return;
+    if (pre === next && pre.type != "thunk") return node //fix bug, shou test type after, because pre may undefined when create new node
 
     if (!isUndefined(pre) && isUndefined(next)) {
+        //bug, remove the node in pre with index
         return removeNode(node, pre, next, index)
     }
 
@@ -70,7 +71,7 @@ export function updateElement(node, pre, next, index = 0) {
 export function updateTarget(node, pre, next, index = 0) {
 
     if (!isUndefined(pre) && isUndefined(next)) {
-        return removeNode(node, pre, next, index)
+        return removeNode(node, pre, next, index) 
     }
 
     if (isUndefined(pre) && !isUndefined(next)) {
@@ -78,7 +79,7 @@ export function updateTarget(node, pre, next, index = 0) {
         return node;
     }
 
-    if (!isNull(pre) && isNull(next) || isNull(pre) && !isNull(next) || pre.type !== next.type ) {
+    if (!isNull(pre) && isNull(next) || isNull(pre) && !isNull(next) || pre.type !== next.type) {
         return replaceNode(node, pre, next, index)
     }
 
@@ -164,10 +165,13 @@ function diffChildren(node, pre, next, index) {
     let preChildren = pre.children || [],
         nextChildren = next.children || [],
         i,
-        nodeChildren = Array.prototype.slice.call(node.childNodes) 
-        // fix bug: node.children => node.childNodes, node.childNodes contains text node, but node.children doesn't
-    for (i = 0; i < preChildren.length || i < nextChildren.length; i++) {
-        updateElement(nodeChildren[index], preChildren[i], nextChildren[i], i)
+        nodeChildren = Array.prototype.slice.call(node.childNodes),
+        nl = nextChildren.length;
+    // fix bug: node.children => node.childNodes, node.childNodes contains text node, but node.children doesn't
+
+    for (i = 0; i < preChildren.length || i < nl; i++) {
+        updateElement(nodeChildren[index], preChildren[i], nextChildren[i], i >= nl ? nl : i)
+
     }
 
     return node

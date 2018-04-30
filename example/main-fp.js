@@ -1,4 +1,4 @@
-import { l, app, IF, ELSE, FOR } from "../src/index+"
+import { l, app, IF, ELSE, FOR } from "../src/all"
 import { MyButtonView, actions as MyButtonAction } from "./mybutton-fp"
 
 let state = {

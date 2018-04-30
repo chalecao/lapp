@@ -5,8 +5,8 @@ import { minify } from 'uglify-es';
 
 export default {
     format: 'es',
-    entry: 'src/index+.js',
-    dest: 'bin/index+.js',
+    entry: 'src/all.js',
+    dest: 'bin/all.js',
     banner: '// lapp with IF/ELSE/FOR component - fed123.com',
     footer:"",
     external: [],

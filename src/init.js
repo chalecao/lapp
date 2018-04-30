@@ -29,7 +29,8 @@ export default function initNode(container, _env) {
         } catch (e) {
 
         }
-        updateTarget(context, oldNode, vnode)
+        // updateTarget(context, oldNode, vnode)
+        updateElement(context, oldNode, vnode)
         // update oldnode, or may cause diff vdom bug
         oldNode = vnode
     }

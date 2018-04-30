@@ -1,5 +1,5 @@
 import { isEventProp, isBool, extractEventName } from './util'
-
+import { addEventListeners, removeEventListeners } from './event'
 /**
  * 设置bool类型属性
  * @param {*} node 节点
@@ -63,6 +63,12 @@ export function updateAttribute(node, name, newVal, oldVal) {
 export function updateAttributes($target, newProps, oldProps = {}) {
     const props = Object.assign({}, oldProps, newProps);
     Object.keys(props).forEach(name => {
-        !isEventProp(name) && updateAttribute($target, name, newProps[name], oldProps[name]);
+        if (!isEventProp(name)){
+            updateAttribute($target, name, newProps[name], oldProps[name]);
+        } else {
+            //移除事件，重新绑定事件
+            removeEventListeners($target, { name: oldProps[name] })
+            addEventListeners($target, { name: newProps[name] })
+        }
     });
 }

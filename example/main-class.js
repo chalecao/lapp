@@ -1,4 +1,4 @@
-import { l, app, component, IF, ELSE, FOR } from "../src/index+"
+import { l, app, component, IF, ELSE, FOR } from "../src/all"
 import MyButton from "./myButton-class"
 class main extends component {
     constructor() {

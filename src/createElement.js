@@ -72,7 +72,7 @@ function createHTMLElement(vnode, dispatch) {
     vnode.attributes && updateAttributes($el, vnode.attributes)
     vnode.attributes && addEventListeners($el, vnode.attributes);
     vnode.children
-        .map(item => createElement(item, dispatch))
+        .map(item => { return createElement(item, dispatch) })
         .forEach($el.appendChild.bind($el));
 
     return $el

@@ -17,6 +17,7 @@ export const isSameThunk = (pre, next) => pre.fn === next.fn
 export const isSVG = (name) => ["svg", "path", "animate"].indexOf(name) >= 0
 export const isEventProp = (name) => /^on/.test(name)
 export const extractEventName = (name) => name.slice(2).toLowerCase()
+export const isCustomProp = (name) => isEventProp(name) || name === 'forceUpdate'
 
 export const JSON2Hash = (data, path) => {
     let res = {};
