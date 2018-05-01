@@ -1,12 +1,12 @@
 class component {
-    constructor() {
-    }
-    $update(dispatch) {
-        dispatch && dispatch()
-    }
-    render() {
+  constructor () {
+  }
+  $update (dispatch) {
+    dispatch && dispatch()
+  }
+  render () {
 
-    }
+  }
 }
 
 export default component

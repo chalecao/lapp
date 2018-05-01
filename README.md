@@ -2,7 +2,7 @@
 lapp = lapp = little app, lapp mainly focus on ui component which can be easily developed with OOP or functional programing!
 just 9kb MVVM framework! we provide two versions:
 bin/index.js - pure MVVM framework.
-bin/index+.js - MVVM framework with IF/ELSE/FOR component inside.
+bin/all.js - MVVM framework with IF/ELSE/FOR component inside.
 
 
 ## npm module
@@ -16,7 +16,7 @@ lapp support both functional program and oop!
 1. fp example, you can find it in example folder main-fp.js
 
 ```
-import { l, app, IF, ELSE, FOR } from "../src/index+"
+import { l, app, IF, ELSE, FOR } from "../src/all"
 import { MyButtonView, actions as MyButtonAction } from "./mybutton-fp"
 
 const state = {
@@ -177,3 +177,4 @@ console.timeEnd("render virtual DOM with class")
 
 ### changelog
 1. up to my project experience, i delete APIs that no need, to make lapp as small as possiable.
+2. for curry function bind in the view, you should add 'forceUpdate' attribute on the element, to make sure update the function when update dom. if not, may cause the function didn't update.

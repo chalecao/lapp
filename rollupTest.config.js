@@ -1,13 +1,15 @@
 import buble from 'rollup-plugin-buble'
 import babel from 'rollup-plugin-babel'
 import uglify from 'rollup-plugin-uglify'
-import { minify } from 'uglify-es';
+import { minify } from 'uglify-es'
+import resolve from 'rollup-plugin-node-resolve'
+import commonjs from 'rollup-plugin-commonjs'
 
 export default [{
-  input: 'src/index.js',
+  input: 'example/main-fp.js',
   output: {
-    file: 'bin/index.js',
-    format: 'cjs'
+    file: 'dist/main-fp.js',
+    format: 'iife'
   },
   banner: '// lapp - fed123.com',
   footer: "",
@@ -30,16 +32,19 @@ export default [{
         // "external-helpers"//注意这个参数不能加，加了之后模块exports有问题，坑坑坑
       ]
     }),
-    buble(),
-    uglify({ mangle: { toplevel: true } }, minify)
+    resolve(),
+    commonjs()
+    // buble(),
+    // uglify({},minify)
   ]
-}, {
-  input: 'src/all.js',
+},
+{
+  input: 'example/main-class.js',
   output: {
-    file: 'bin/all.js',
-    format: 'cjs'
+    file: 'dist/main-class.js',
+    format: 'iife'
   },
-  banner: '// lapp with IF/ELSE/FOR component - fed123.com',
+  banner: '// lapp - fed123.com',
   footer: "",
   external: [],
   paths: {
@@ -60,7 +65,9 @@ export default [{
         // "external-helpers"//注意这个参数不能加，加了之后模块exports有问题，坑坑坑
       ]
     }),
-    buble(),
-    uglify({ mangle: { toplevel: true } }, minify)
+    resolve(),
+    commonjs()
+    // buble(),
+    // uglify({},minify)
   ]
 }]
