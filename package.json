@@ -1,6 +1,6 @@
 {
     "name": "lapp",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "description": "lapp = little app, lapp mainly focus on ui component which can be easily developed with OOP or functional programing!",
     "homepage": "https://github.com/chalecao/lapp#readme",
     "repository": {
@@ -12,7 +12,11 @@
         "chalecao <chh_exe@163.com>"
     ],
     "license": "MIT",
-    "keywords": ["lapp", "little", "fast"],
+    "keywords": [
+        "lapp",
+        "little",
+        "fast"
+    ],
     "main": "dist/index.js",
     "jsnext:main": "dist/index.es.js",
     "eslintConfig": {
