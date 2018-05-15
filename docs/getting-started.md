@@ -1,57 +1,176 @@
 ---
 id: bsk:getting-started
-title: Getting Started ∙ Babel Starter Kit
+title: Getting Started ∙ Lapp
 ---
 
 # Getting Started
 
-For better experience, make sure that you have `npm v3+` installed. Start by cloning this repo and
-installing project dependencies:
+For better experience, make sure that you have `npm v3+` installed. you can install lapp:
 
-```sh
-$ git clone -o babel-starter-kit \
-      -b master --single-branch \
-      https://github.com/kriasoft/babel-starter-kit.git \
-      <your-project-name>
-$ cd <your-project-name>
-$ npm install
+```
+npm install lapp --save-dev
 ```
 
-Update your name in `LICENSE.txt` and project information in `package.json` and `README.md` files.
-Write your code in `src` folder, write tests in `test` folder. Run `npm run build` to compile the
-source code into a distributable format. Write documentation in markdown format in `docs` folder.
-Run `npm start` to launch a development server with the documentation site.
+## how to use
+lapp support both functional program and oop!
+1. fp example, you can find it in example folder main-fp.js
 
-Alternatively, start a new project with **Yeoman**:
-
-```sh
-$ npm install -g generator-javascript
-$ mkdir <your-project-name>
-$ cd <your-project-name>
-$ yo javascript
 ```
+import { l, app, IF, ELSE, FOR } from "../src/all"
+import { MyButtonView, actions as MyButtonAction } from "./mybutton-fp"
 
-### How to Build
+const state = {
+    aa: -1,
+    bb: -1,
+    data: [{ name: "11", href: "22" }, { name: "33", href: "44" }]
+}
 
-Running `npm run build` will compile source files to a distributable format (CommonJS, ES6 and UMD)
-ready to be published to NPM from the `dist` folder. See `tools/build.js` for more info.
+const actions = {
+    log: (e) => {
+        console.log(e.target.value);
+        MyButtonAction.addCount()
+    },
+    handleClick: () => {
+        state.data.push({ name: "77", href: "88" })
+        BoxView.$update()
+    },
+    compute: (data) => {
+        let dd = [];
+        state.data.forEach((item, index) => {
+            dd.push(<div>
+                <div class="title">
+                    {item.name}
+                </div>
+                <IF cond={item.href == "22"}>
+                    <div class="spin">{item.href}</div>
+                </IF>
+            </div>
+            )
+        })
+        return dd;
+    }
+}
 
-### How to Test
+const BoxView = ({ props, children }) => (<ul style="list-style: none;">
+    <li className="item" onClick={() => alert('hi!')}>item 1</li>
+    <li className="item">
+        <input type="checkbox" checked={true} />
+        <input type="text" onInput={actions.log} />
+    </li>
+    <li onClick={actions.handleClick} forceUpdate={true}>text</li>
+    <MyButtonView className="button">hello, button</MyButtonView>
+    <IF class="aaa" cond={state.aa > 0}>
+        aa 大于 0
+            <ELSE cond={state.bb > 0}>
+            aa 小于 0
+                bb 大于 0
+                <ELSE>
+                aa 小于 0
+                   bb 小于 0
+                </ELSE>
+        </ELSE>
+    </IF>
+    <IF cond={state.aa < 0}>
+        sdfsdfsfsd
+            <FOR  class="bbb" data={state.data} key="item" >
+            <div>
+                <a href="__item.href__" >__item.name__ -  __item.index__ __item.test__</a>
+                <div><span>__item.href__ </span></div>
+                <IF cond={state.aa < 0}>
+                    aa 小于 0
+                    </IF>
+            </div>
+        </FOR>
+    </IF>
+    {actions.compute(state.data)}
+</ul>
+);
 
-Run one, or a combination of the following commands to lint and test your code:
+//main
+console.time("render virtual DOM with FP")
+app(document.querySelector("#app"), BoxView, MyButtonView)
+console.timeEnd("render virtual DOM with FP")
+```
+2. oop example, you can find it in example folder main-class.js
+```
+import { l, component, IF, ELSE, FOR } from "../src/index+"
+import MyButton from "./myButton-class"
+class main extends component {
+    constructor() {
+        super()
+        this.aa = -1;
+        this.bb = -1;
+        this.data = [{ name: "11", href: "22" }, { name: "33", href: "44" }]
+    }
+    log(e) {
+        console.log(e.target.value);
+    }
+    handleClick(){
+        this.data.push({ name: "55", href: "66" })
+        this.$update()
+    }
+    handleClick2(){
+        this.data.push({ name: "77", href: "88" })
+        this.$update()
+    }
+    compute(data){
+        let dd = [];
+        data.forEach((item,index)=>{
+            dd.push(<div>
+                <div class="title">
+                    {item.name}
+                </div>
+                <IF cond={item.href == "22"}>
+                    <div class="spin">{item.href}</div>
+                </IF>
+                </div>
+            )
+        })
+        return dd;
+    }
+    render() {
+        const aa = [1, 2]
+        return (<ul style="list-style: none;">
+            <li className="item" onClick={this.handleClick.bind(this)}>item 1</li>
+            <li className="item" >
+                <input type="checkbox" checked={true} />
+                <input type="text" onInput={this.log.bind(this)} />
+            </li>
+            {/* this node will always be updated */}
+            <li onClick={this.handleClick2.bind(this)} forceUpdate={true}>text</li>
+            <MyButton className="button">hello, button</MyButton>
+            <IF cond={this.aa > 0}>
+                aa 大于 0
+            <ELSE cond={this.bb > 0}>
+                    aa 小于 0
+                bb 大于 0
+                <ELSE>
+                        aa 小于 0
+                   bb 小于 0
+                </ELSE>
+            </ELSE>
+            </IF>
+            <IF cond={this.aa < 0}>
+            sdfsdfsfsd
+            <FOR class="sadad" data={this.data} key="item" >
+                <div>
+                    <a href="__item.href__" >__item.name__ -  __item.index__ __item.test__</a>
+                    <div><span>__item.href__ </span></div>
+                    <IF cond={this.aa < 0}>
+                    aa 小于 0
+                    </IF>
+                </div>
+            </FOR>
+            </IF>
+            {this.compute(this.data)}
+        </ul>)
+    }
 
-* `npm run lint`       — lint the source code with ESLint
-* `npm test`           — run unit tests with Mocha
-* `npm run test:watch` — run unit tests with Mocha, and watch files for changes
-* `npm run test:cover` — run unit tests with code coverage by Istanbul
+}
+export default main
 
-### How to Update
+console.time("render virtual DOM with class")
+app(document.querySelector("#app"), new main())
+console.timeEnd("render virtual DOM with class")
 
-Down the road you can fetch and merge the recent changes from this repo back into your project:
-
-```sh
-$ git checkout master
-$ git fetch babel-starter-kit
-$ git merge babel-starter-kit/master
-$ npm install
 ```
