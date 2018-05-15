@@ -13,8 +13,8 @@
     ],
     "license": "MIT",
     "keywords": ["lapp", "little", "fast"],
-    "main": "index.js",
-    "jsnext:main": "index.es.js",
+    "main": "dist/index.js",
+    "jsnext:main": "dist/index.es.js",
     "eslintConfig": {
         "parser": "babel-eslint",
         "extends": "airbnb-base"
