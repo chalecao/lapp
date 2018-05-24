@@ -1,7 +1,8 @@
 import { isUndefined, isString, isNumber, isFunction, isNull, isArray } from './util'
 
 export default function createNode (type, attributes = {}, ...children) {
-  if (!type) return
+  if (!type) return;
+
   children = Array.prototype.reduce.call(children, reduceChildren, [])
   if (isFunction(type)) {
     return createThunk(type, attributes, children, type)

@@ -44,12 +44,13 @@ export default function initNode (container, _env) {
     let vnode = _ins
     // 兼容functional program
     if (vnode.children && !vnode.children.length) {
-      let { props, children } = vnode
+      let { props, children, fn } = vnode
       let model = {
         children,
         props
       }
       vnode = vnode.fn(model)
+      vnode.fn = fn
     }
     // 兼容 class模块
     if ('render' in _ins) {

@@ -63,96 +63,96 @@ var toConsumableArray = function (arr) {
 };
 
 var isType = function isType(type) {
-  return function (value) {
-    return (typeof value === 'undefined' ? 'undefined' : _typeof(value)) === type;
-  };
+    return function (value) {
+        return (typeof value === 'undefined' ? 'undefined' : _typeof(value)) === type;
+    };
 };
 var isVType = function isVType(type) {
-  return function (vnode) {
-    return vnode.type === type;
-  };
+    return function (vnode) {
+        return vnode.type === type;
+    };
 };
 var isUndefined = function isUndefined(name) {
-  return isType('undefined')(name) && name == undefined;
+    return isType('undefined')(name) && name == undefined;
 };
 var isString = isType('string');
 var isBool = isType('boolean');
 var isNumber = isType('number');
 var isFunction = function isFunction(name) {
-  return name.toString().match('function');
+    return name.toString().match('function');
 };
 var isClass = function isClass(name) {
-  return name.toString().match('class ');
+    return name.toString().match('class ');
 }; // change 2 "class " to avoid match className
 var isNull = function isNull(value) {
-  return value === null;
+    return value === null;
 };
 var isNative = isVType('native');
 var isThunk = isVType('thunk');
 var isText = isVType('text');
 var isArray = Array.isArray;
 var isObj = function isObj(name) {
-  return Object.prototype.toString.call(name).slice(8, -1) == 'Object';
+    return Object.prototype.toString.call(name).slice(8, -1) == 'Object';
 };
 var isSameThunk = function isSameThunk(pre, next) {
-  return pre.fn === next.fn;
+    return pre.fn === next.fn;
 };
 
 var isSVG = function isSVG(name) {
-  return ['svg', 'path', 'animate'].indexOf(name) >= 0;
+    return ['svg', 'path', 'animate'].indexOf(name) >= 0;
 };
 var isEventProp = function isEventProp(name) {
-  return (/^on/.test(name)
-  );
+    return (/^on/.test(name)
+    );
 };
 var extractEventName = function extractEventName(name) {
-  return name.slice(2).toLowerCase();
+    return name.slice(2).toLowerCase();
 };
 
 var JSON2Hash = function JSON2Hash(data, path) {
-  var res = {};
-  Object.keys(data).forEach(function (key) {
-    res[path + '.' + key] = data[key];
-    if (_typeof(data[key]) === 'object') {
-      res = Object.assign(res, JSON2Hash(data[key], path + '.' + key));
-    }
-  });
-  return res;
+    var res = {};
+    Object.keys(data).forEach(function (key) {
+        res[path + '.' + key] = data[key];
+        if (_typeof(data[key]) === 'object') {
+            res = Object.assign(res, JSON2Hash(data[key], path + '.' + key));
+        }
+    });
+    return res;
 };
 
 var findChildren = function findChildren(children, key) {
-  var index = -1;
-  var _children = children.find(function (item, i) {
-    if (item.fn && item.fn.toString().match(key)) {
-      index = i;
-      return true;
-    }
-  });
-  return { index: index, children: _children };
+    var index = -1;
+    var _children = children.find(function (item, i) {
+        if (item.fn && item.fn.toString().match(key)) {
+            index = i;
+            return true;
+        }
+    });
+    return { index: index, children: _children };
 };
 
 // 深度克隆
 var deepClone = function deepClone(obj) {
-  var result;
-  // 确定result的类型
-  if (isObj(obj)) {
-    result = {};
-  } else if (isArray(obj)) {
-    result = [];
-  } else {
-    return obj;
-  }
-  for (var key in obj) {
-    var copy = obj[key];
-    if (isObj(copy)) {
-      result[key] = deepClone(copy); // 递归调用
-    } else if (isArray(copy)) {
-      result[key] = deepClone(copy);
+    var result;
+    // 确定result的类型
+    if (isObj(obj)) {
+        result = {};
+    } else if (isArray(obj)) {
+        result = [];
     } else {
-      result[key] = obj[key];
+        return obj;
     }
-  }
-  return result;
+    for (var key in obj) {
+        var copy = obj[key];
+        if (isObj(copy)) {
+            result[key] = deepClone(copy); // 递归调用
+        } else if (isArray(copy)) {
+            result[key] = deepClone(copy);
+        } else {
+            result[key] = obj[key];
+        }
+    }
+    return result;
 };
 
 function createNode(type) {
@@ -163,6 +163,7 @@ function createNode(type) {
   var attributes = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
   if (!type) return;
+
   children = Array.prototype.reduce.call(children, reduceChildren, []);
   if (isFunction(type)) {
     return createThunk(type, attributes, children, type);
@@ -327,8 +328,8 @@ function updateAttributes($target, newProps) {
  * @returns {Text}
  */
 function createTextNode(text) {
-  var value = isString(text) || isNumber(text) ? text : '';
-  return document.createTextNode(value);
+    var value = isString(text) || isNumber(text) ? text : '';
+    return document.createTextNode(value);
 }
 
 /**
@@ -336,52 +337,52 @@ function createTextNode(text) {
  * @param vnode
  */
 function createThunk$1(vnode, dispatch) {
-  var props = vnode.props,
-      children = vnode.children;
-  var onCreate = vnode.options.onCreate;
+    var props = vnode.props,
+        children = vnode.children;
+    var onCreate = vnode.options.onCreate;
 
-  var model = {
-    children: children,
-    props: props
-    // render model
-  };var output = void 0,
-      ins = void 0;
-  if (isClass(vnode.fn)) {
-    ins = new vnode.fn();
-    output = ins.render(model);
-    ins.$update = ins.$update.bind(this, function () {
-      dispatch && dispatch('updateAll');
-    });
-  } else {
-    try {
-      output = vnode.fn(model);
-    } catch (e) {
-      // console.log(e)
-      // 兼容对于打包工具会把class 打包出一个包裹的function，这时候会误判, 所以fu失败就还是采用new的形式
-      ins = new vnode.fn();
-      output = ins.render(model);
-      ins.$update = ins.$update.bind(this, function () {
-        dispatch && dispatch('updateAll');
-      });
+    var model = {
+        children: children,
+        props: props
+        // render model
+    };var output = void 0,
+        ins = void 0;
+    if (isClass(vnode.fn)) {
+        ins = new vnode.fn();
+        output = ins.render(model);
+        ins.$update = ins.$update.bind(this, function () {
+            dispatch && dispatch('updateAll');
+        });
+    } else {
+        try {
+            output = vnode.fn(model);
+        } catch (e) {
+            // console.log(e)
+            // 兼容对于打包工具会把class 打包出一个包裹的function，这时候会误判, 所以fn失败就还是采用new的形式
+            ins = new vnode.fn();
+            output = ins.render(model);
+            ins.$update = ins.$update.bind(this, function () {
+                dispatch && dispatch('updateAll');
+            });
+        }
     }
-  }
 
-  if (!output) {
-    return '';
-  }
-  var DOMElement = createElement(output);
-  addEventListeners(DOMElement, output.attributes);
-  if (onCreate) onCreate(model);
-  vnode.state = {
-    vnode: output,
-    $ins: ins,
-    model: model
-  };
-  return DOMElement;
+    if (!output) {
+        return '';
+    }
+    var DOMElement = createElement(output);
+    addEventListeners(DOMElement, output.attributes);
+    if (onCreate) onCreate(model);
+    vnode.state = {
+        vnode: output,
+        $ins: ins,
+        model: model
+    };
+    return DOMElement;
 }
 
 function createSVGElement(name) {
-  return document.createElementNS('http://www.w3.org/2000/svg', name);
+    return document.createElementNS('http://www.w3.org/2000/svg', name);
 }
 
 /**
@@ -389,14 +390,19 @@ function createSVGElement(name) {
  * @param {*} vnode
  */
 function createHTMLElement(vnode, dispatch) {
-  var $el = isSVG(vnode.tagName) ? createSVGElement(vnode.tagName) : document.createElement(vnode.tagName);
-  vnode.attributes && updateAttributes($el, vnode.attributes);
-  vnode.attributes && addEventListeners($el, vnode.attributes);
-  vnode.children.map(function (item) {
-    return createElement(item, dispatch);
-  }).forEach($el.appendChild.bind($el));
+    var $el = isSVG(vnode.tagName) ? createSVGElement(vnode.tagName) : document.createElement(vnode.tagName);
+    vnode.attributes && updateAttributes($el, vnode.attributes);
+    vnode.attributes && addEventListeners($el, vnode.attributes);
+    vnode.children.map(function (item) {
+        if (item.type == "thunk") {
+            item.fn.$update = function () {
+                return vnode.fn.$update && vnode.fn.$update();
+            };
+        }
+        return createElement(item, dispatch);
+    }).forEach($el.appendChild.bind($el));
 
-  return $el;
+    return $el;
 }
 
 /**
@@ -404,7 +410,7 @@ function createHTMLElement(vnode, dispatch) {
  * @returns {Element}
  */
 function createEmptyHTMLElement() {
-  return document.createElement('noscript');
+    return document.createElement('noscript');
 }
 
 /**
@@ -412,19 +418,19 @@ function createEmptyHTMLElement() {
  * @param vnode
  */
 var createElement = function createElement(vnode, dispatch) {
-  // console.log(this) //$parent
-  // console.log(vnode)
-  if (isNull(vnode) || isUndefined(vnode)) return;
-  switch (vnode.type) {
-    case 'text':
-      return createTextNode(vnode.nodeValue);
-    case 'thunk':
-      return createThunk$1(vnode, dispatch);
-    case 'empty':
-      return createEmptyHTMLElement();
-    case 'native':
-      return createHTMLElement(vnode, dispatch);
-  }
+    // console.log(this) //$parent
+    // console.log(vnode)
+    if (isNull(vnode) || isUndefined(vnode)) return;
+    switch (vnode.type) {
+        case 'text':
+            return createTextNode(vnode.nodeValue);
+        case 'thunk':
+            return createThunk$1(vnode, dispatch);
+        case 'empty':
+            return createEmptyHTMLElement();
+        case 'native':
+            return createHTMLElement(vnode, dispatch);
+    }
 };
 
 /**
@@ -648,13 +654,15 @@ function initNode(container, _env) {
     if (vnode.children && !vnode.children.length) {
       var _vnode = vnode,
           props = _vnode.props,
-          children = _vnode.children;
+          children = _vnode.children,
+          fn = _vnode.fn;
 
       var model = {
         children: children,
         props: props
       };
       vnode = vnode.fn(model);
+      vnode.fn = fn;
     }
     // 兼容 class模块
     if ('render' in _ins) {

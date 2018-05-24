@@ -15,7 +15,8 @@
   "keywords": [
     "lapp",
     "little",
-    "fast"
+    "fast",
+    "virtual dom"
   ],
   "main": "dist/index.js",
   "jsnext:main": "dist/index.es.js",

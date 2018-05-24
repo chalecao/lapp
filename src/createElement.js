@@ -8,8 +8,8 @@ import { addEventListeners } from './event'
  * @returns {Text}
  */
 function createTextNode(text) {
-  let value = isString(text) || isNumber(text) ? text : ''
-  return document.createTextNode(value)
+    let value = isString(text) || isNumber(text) ? text : ''
+    return document.createTextNode(value)
 }
 
 /**
@@ -17,50 +17,50 @@ function createTextNode(text) {
  * @param vnode
  */
 function createThunk(vnode, dispatch) {
-  let { props, children } = vnode
-  let { onCreate } = vnode.options
-  let model = {
-    children,
-    props
-  }
-  // render model
-  let output, ins
-  if (isClass(vnode.fn)) {
-    ins = new vnode.fn()
-    output = ins.render(model)
-    ins.$update = ins.$update.bind(this, () => {
-      dispatch && dispatch('updateAll')
-    })
-  } else {
-    try {
-      output = vnode.fn(model)
-    } catch (e) {
-      // console.log(e)
-      // 兼容对于打包工具会把class 打包出一个包裹的function，这时候会误判, 所以fu失败就还是采用new的形式
-      ins = new vnode.fn()
-      output = ins.render(model)
-      ins.$update = ins.$update.bind(this, () => {
-        dispatch && dispatch('updateAll')
-      })
+    let { props, children } = vnode
+    let { onCreate } = vnode.options
+    let model = {
+        children,
+        props
     }
-  }
+    // render model
+    let output, ins
+    if (isClass(vnode.fn)) {
+        ins = new vnode.fn()
+        output = ins.render(model)
+        ins.$update = ins.$update.bind(this, () => {
+            dispatch && dispatch('updateAll')
+        })
+    } else {
+        try {
+            output = vnode.fn(model)
+        } catch (e) {
+            // console.log(e)
+            // 兼容对于打包工具会把class 打包出一个包裹的function，这时候会误判, 所以fn失败就还是采用new的形式
+            ins = new vnode.fn()
+            output = ins.render(model)
+            ins.$update = ins.$update.bind(this, () => {
+                dispatch && dispatch('updateAll')
+            })
+        }
+    }
 
-  if (!output) {
-    return ''
-  }
-  let DOMElement = createElement(output)
-  addEventListeners(DOMElement, output.attributes)
-  if (onCreate) onCreate(model)
-  vnode.state = {
-    vnode: output,
-    $ins: ins,
-    model
-  }
-  return DOMElement
+    if (!output) {
+        return ''
+    }
+    let DOMElement = createElement(output)
+    addEventListeners(DOMElement, output.attributes)
+    if (onCreate) onCreate(model)
+    vnode.state = {
+        vnode: output,
+        $ins: ins,
+        model
+    }
+    return DOMElement
 }
 
 function createSVGElement(name) {
-  return document.createElementNS('http://www.w3.org/2000/svg', name)
+    return document.createElementNS('http://www.w3.org/2000/svg', name)
 }
 
 /**
@@ -68,14 +68,20 @@ function createSVGElement(name) {
  * @param {*} vnode
  */
 function createHTMLElement(vnode, dispatch) {
-  let $el = isSVG(vnode.tagName) ? createSVGElement(vnode.tagName) : document.createElement(vnode.tagName)
-  vnode.attributes && updateAttributes($el, vnode.attributes)
-  vnode.attributes && addEventListeners($el, vnode.attributes)
-  vnode.children
-    .map(item => { return createElement(item, dispatch) })
-    .forEach($el.appendChild.bind($el))
+    let $el = isSVG(vnode.tagName) ? createSVGElement(vnode.tagName) : document.createElement(vnode.tagName)
+    vnode.attributes && updateAttributes($el, vnode.attributes)
+    vnode.attributes && addEventListeners($el, vnode.attributes)
+    vnode.children
+        .map(item => {
+            //把子view的$update绑定到父元素的$update
+            if (item.type == "thunk") {
+                item.fn.$update = () => vnode.fn.$update && vnode.fn.$update();
+            }
+            return createElement(item, dispatch)
+        })
+        .forEach($el.appendChild.bind($el))
 
-  return $el
+    return $el
 }
 
 /**
@@ -83,7 +89,7 @@ function createHTMLElement(vnode, dispatch) {
  * @returns {Element}
  */
 function createEmptyHTMLElement() {
-  return document.createElement('noscript')
+    return document.createElement('noscript')
 }
 
 /**
@@ -91,17 +97,17 @@ function createEmptyHTMLElement() {
  * @param vnode
  */
 export const createElement = (vnode, dispatch) => {
-  // console.log(this) //$parent
-  // console.log(vnode)
-  if (isNull(vnode) || isUndefined(vnode)) return
-  switch (vnode.type) {
-    case 'text':
-      return createTextNode(vnode.nodeValue)
-    case 'thunk':
-      return createThunk(vnode, dispatch)
-    case 'empty':
-      return createEmptyHTMLElement()
-    case 'native':
-      return createHTMLElement(vnode, dispatch)
-  }
+    // console.log(this) //$parent
+    // console.log(vnode)
+    if (isNull(vnode) || isUndefined(vnode)) return
+    switch (vnode.type) {
+        case 'text':
+            return createTextNode(vnode.nodeValue)
+        case 'thunk':
+            return createThunk(vnode, dispatch)
+        case 'empty':
+            return createEmptyHTMLElement()
+        case 'native':
+            return createHTMLElement(vnode, dispatch)
+    }
 }
