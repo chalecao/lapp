@@ -15,7 +15,8 @@
     "keywords": [
         "lapp",
         "little",
-        "fast"
+        "fast",
+        "virtual dom"
     ],
     "main": "dist/index.js",
     "jsnext:main": "dist/index.es.js",
@@ -40,6 +41,7 @@
         "chai": "^4.0.0-canary.1",
         "coveralls": "^2.11.14",
         "del": "^2.2.2",
+        "easystatic": "^0.1.12",
         "eslint": "^3.8.0",
         "eslint-config-airbnb-base": "^10.0.1",
         "eslint-plugin-import": "^2.2.0",

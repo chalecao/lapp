@@ -20,61 +20,61 @@ export const extractEventName = (name) => name.slice(2).toLowerCase()
 export const isCustomProp = (name) => isEventProp(name) || name === 'forceUpdate'
 
 export const JSON2Hash = (data, path) => {
-  let res = {}
-  Object.keys(data).forEach(key => {
-    res[path + '.' + key] = data[key]
-    if (typeof data[key] === 'object') {
-      res = Object.assign(res, JSON2Hash(data[key], path + '.' + key))
-    }
-  })
-  return res
+    let res = {}
+    Object.keys(data).forEach(key => {
+        res[path + '.' + key] = data[key]
+        if (typeof data[key] === 'object') {
+            res = Object.assign(res, JSON2Hash(data[key], path + '.' + key))
+        }
+    })
+    return res
 }
 
 export const findChildren = (children, key) => {
-  let index = -1
-  let _children = children.find((item, i) => {
-    if (item.fn && item.fn.toString().match(key)) {
-      index = i
-      return true
-    }
-  })
-  return { index, children: _children }
+    let index = -1
+    let _children = children.find((item, i) => {
+        if (item.fn && item.fn.toString().match(key)) {
+            index = i
+            return true
+        }
+    })
+    return { index, children: _children }
 }
 
 // 深度克隆
 export const deepClone = (obj) => {
-  var result
-  // 确定result的类型
-  if (isObj(obj)) {
-    result = {}
-  } else if (isArray(obj)) {
-    result = []
-  } else {
-    return obj
-  }
-  for (var key in obj) {
-    var copy = obj[key]
-    if (isObj(copy)) {
-      result[key] = deepClone(copy)// 递归调用
-    } else if (isArray(copy)) {
-      result[key] = deepClone(copy)
+    var result
+    // 确定result的类型
+    if (isObj(obj)) {
+        result = {}
+    } else if (isArray(obj)) {
+        result = []
     } else {
-      result[key] = obj[key]
+        return obj
     }
-  }
-  return result
+    for (var key in obj) {
+        var copy = obj[key]
+        if (isObj(copy)) {
+            result[key] = deepClone(copy)// 递归调用
+        } else if (isArray(copy)) {
+            result[key] = deepClone(copy)
+        } else {
+            result[key] = obj[key]
+        }
+    }
+    return result
 }
 
-export function toArray (listLike) {
-  if (!listLike) {
-    return []
-  }
+export function toArray(listLike) {
+    if (!listLike) {
+        return []
+    }
 
-  var list = []
+    var list = []
 
-  for (var i = 0, len = listLike.length; i < len; i++) {
-    list.push(listLike[i])
-  }
+    for (var i = 0, len = listLike.length; i < len; i++) {
+        list.push(listLike[i])
+    }
 
-  return list
+    return list
 }
