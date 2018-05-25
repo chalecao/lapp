@@ -85,7 +85,7 @@ function createHTMLElement(vnode, dispatch) {
             }
             return createElement(item, dispatch)
         })
-        .forEach($el.appendChild)
+        .forEach($el.appendChild.bind($el))
 
     return $el
 }
