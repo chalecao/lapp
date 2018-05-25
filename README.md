@@ -21,6 +21,7 @@ see demo folder example.
 See also [fed123.com](https://www.fed123.com/)
 
 
+
 ### Learn ES6
 
 :mortar_board: &nbsp; **[ES6 Training Course](https://es6.io/friend/konstantin)** by Wes Bos<br>
@@ -30,7 +31,57 @@ See also [fed123.com](https://www.fed123.com/)
 ### changelog
 #### 2018.05.2
 1. add onShow callback, week life circle control, because you can control it in you view.
-2. add key when use subview. <myCard key="aa" > , if key property no change ,then don't update this subview. 
+2. add key when use subview. <myCard key="aa" > , if key property no change ,then don't update this subview. thsi would be useful shen you have card list.
+```
+--- main.js
+import { l, app } from "lapp"
+import { MyButtonView, actions as MyButtonAction } from "../../component/button/button"
+import './main.css'
+
+let state = {
+    key: 10
+}
+
+const actions = {
+    handleClickButton(e){
+        // state.key ++; // if key not change subview not change,if key change, sub view change
+        console.log(state.key)
+        console.log(e)
+        BoxView.$update()
+    }
+}
+
+export const BoxView = ({ props, children }) => (<ul style="list-style: none;">
+    <MyButtonView key={state.key} className="button" onClick={actions.handleClickButton}>hello, button</MyButtonView>
+</ul>
+)
+--- button.js
+import { l } from "lapp"
+import './button.css'
+
+const state = {
+    count: 0
+}
+
+export const actions = {
+    addCount: () => {
+        state.count++;
+    },
+    onShow: () => {
+        state.count = 50;
+        setTimeout(() => {
+            MyButtonView.$update()
+        }, 500)
+    }
+}
+
+export const MyButtonView = ({ props, children }) => {
+    return <button onShow={actions.onShow} onClick={(e)=>{
+        actions.addCount(e);
+        props.onClick(e)
+    }}>{children}{state.count}</button>
+}
+```
 
 #### 2018.04.31
 1. up to my project experience, i delete APIs that no need, to make lapp as small as possiable.
