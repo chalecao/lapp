@@ -80,11 +80,11 @@ function createHTMLElement(vnode, dispatch) {
             if (item.type == "thunk") {
                 item.fn.$update = () => vnode.fn.$update && vnode.fn.$update();
             }
-            try {
-                item.state.vnode.attributes.onMount && item.state.vnode.attributes.onMount();
-                $el.appendChild(el)
-                item.state.vnode.attributes.afterMount && item.state.vnode.attributes.afterMount();
-            } catch (e) { }
+
+            item.state && item.state.vnode.attributes && item.state.vnode.attributes.onMount && item.state.vnode.attributes.onMount();
+            $el.appendChild(el)
+            item.state && item.state.vnode.attributes && item.state.vnode.attributes.afterMount && item.state.vnode.attributes.afterMount();
+
         })
 
     return $el
