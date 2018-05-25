@@ -58,6 +58,8 @@ export function updateElement(node, pre, next, index = 0) {
         if (isSameThunk(pre, next)) {
             if (!pre.props.key || (pre.props.key != next.props.key)) {
                 updateThunk(node, pre, next, index); return;
+            } else {
+                next.state = pre.state
             }
         } else {
             replaceThunk(node, pre, next, index); return;
