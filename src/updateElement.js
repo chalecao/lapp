@@ -198,7 +198,6 @@ function updateThunk(node, pre, next, index) {
             nextNode = pre.state.$ins.render(model)
         }
     }
-    props.onUpdate && props.onUpdate()
     // 更新块
     updateElement(node, pre.state.vnode, nextNode, index)
     next.state = {

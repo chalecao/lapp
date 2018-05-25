@@ -48,14 +48,11 @@ function createThunk(vnode, dispatch) {
     if (!output) {
         return ''
     }
-    //渲染前执行onMount
-    output.attributes.onMount && output.attributes.onMount();
-
     let DOMElement = createElement(output)
     addEventListeners(DOMElement, output.attributes)
 
-    //渲染后执行afterMount
-    output.attributes.afterMount && output.attributes.afterMount();
+    //渲染后执行onShow
+    output.attributes.onShow && output.attributes.onShow();
 
     vnode.state = {
         vnode: output,

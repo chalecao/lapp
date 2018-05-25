@@ -29,7 +29,7 @@ See also [fed123.com](https://www.fed123.com/)
 
 ### changelog
 #### 2018.05.2
-1. add onMount, afterMount, onUpdate event support
+1. add onShow callback, week life circle control, because you can control it in you view. 
 
 #### 2018.04.31
 1. up to my project experience, i delete APIs that no need, to make lapp as small as possiable.
