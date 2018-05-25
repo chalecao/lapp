@@ -51,6 +51,9 @@ function createThunk(vnode, dispatch) {
     let DOMElement = createElement(output)
     addEventListeners(DOMElement, output.attributes)
 
+    vnode.onMount = output.attributes.onMount;
+    vnode.afterMount = output.attributes.afterMount;
+
     vnode.state = {
         vnode: output,
         $ins: ins,
@@ -81,9 +84,9 @@ function createHTMLElement(vnode, dispatch) {
                 item.fn.$update = () => vnode.fn.$update && vnode.fn.$update();
             }
 
-            item.state && item.state.vnode.attributes && item.state.vnode.attributes.onMount && item.state.vnode.attributes.onMount();
+            item.onMount && item.onMount();
             $el.appendChild(el)
-            item.state && item.state.vnode.attributes && item.state.vnode.attributes.afterMount && item.state.vnode.attributes.afterMount();
+            item.afterMount && item.afterMount();
 
         })
 
