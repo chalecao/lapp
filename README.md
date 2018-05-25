@@ -29,7 +29,8 @@ See also [fed123.com](https://www.fed123.com/)
 
 ### changelog
 #### 2018.05.2
-1. add onShow callback, week life circle control, because you can control it in you view. 
+1. add onShow callback, week life circle control, because you can control it in you view.
+2. add key when use subview. <myCard key="aa" > , if key property no change ,then don't update this subview. 
 
 #### 2018.04.31
 1. up to my project experience, i delete APIs that no need, to make lapp as small as possiable.

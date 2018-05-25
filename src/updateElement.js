@@ -11,31 +11,32 @@ import { updateAttributes } from './attribute'
  */
 export function updateElement(node, pre, next, index = 0) {
     if (!node) return
-    if (pre === next && pre.type != 'thunk') return node // fix bug, shou test type after, because pre may undefined when create new node
+    if (pre === next && pre.type != 'thunk') return; // fix bug, shou test type after, because pre may undefined when create new node
 
     if (!isUndefined(pre) && isUndefined(next)) {
         // bug, remove the node in pre with index
-        return removeNode(node, pre, next, index)
+        removeNode(node, pre, next, index);
+        return;
     }
 
     if (isUndefined(pre) && !isUndefined(next)) {
         node.appendChild(createElement(next))
-        return node
+        return;
     }
 
     if (!isNull(pre) && isNull(next) || isNull(pre) && !isNull(next)) {
-        return replaceNode(node, pre, next, index)
+        replaceNode(node, pre, next, index); return;
     }
 
     if (pre.type !== next.type) {
-        return replaceNode(node, pre, next, index)
+        replaceNode(node, pre, next, index); return;
     }
     if (next.attributes && next.attributes.forceUpdate) {
-        return replaceNode(node, pre, next, index)
+        replaceNode(node, pre, next, index); return;
     }
     if (isNative(next)) {
         if (pre.tagName !== next.tagName) {
-            return replaceNode(node, pre, next, index)
+            replaceNode(node, pre, next, index); return;
         }
 
         updateAttributes(
@@ -43,75 +44,27 @@ export function updateElement(node, pre, next, index = 0) {
             next.attributes,
             pre.attributes
         )
-        return diffChildren(node, pre, next, index)
+        diffChildren(node, pre, next, index); return;
     }
 
     if (isText(next)) {
         if (pre.nodeValue !== next.nodeValue) {
             node.childNodes[index].nodeValue = next.nodeValue
         }
-        return node
+        return;
     }
 
     if (isThunk(next)) {
         if (isSameThunk(pre, next)) {
-            return updateThunk(node, pre, next, index)
+            if (!pre.props.key || (pre.props.key != next.props.key)) {
+                updateThunk(node, pre, next, index); return;
+            }
         } else {
-            return replaceThunk(node, pre, next, index)
+            replaceThunk(node, pre, next, index); return;
         }
     }
 }
 
-/**
- * 更新node
- * @param node -dom node,  parent node of vdom
- * @param pre  -pre vnode
- * @param next -next vnode
- * @param index - child index in parent
- * @returns node
- */
-export function updateTarget(node, pre, next, index = 0) {
-    if (!isUndefined(pre) && isUndefined(next)) {
-        return removeNode(node, pre, next, index)
-    }
-
-    if (isUndefined(pre) && !isUndefined(next)) {
-        node.appendChild(createElement(next))
-        return node
-    }
-
-    if (!isNull(pre) && isNull(next) || isNull(pre) && !isNull(next) || pre.type !== next.type) {
-        return replaceNode(node, pre, next, index)
-    }
-
-    if (isNative(next)) {
-        if (pre.tagName !== next.tagName) {
-            return replaceNode(node, pre, next, index)
-        }
-
-        updateAttributes(
-            node.childNodes[index],
-            next.attributes,
-            pre.attributes
-        )
-        return diffChildren(node, pre, next, index)
-    }
-
-    if (isText(next)) {
-        if (pre.nodeValue !== next.nodeValue) {
-            node.childNodes[index].nodeValue = next.nodeValue
-        }
-        return node
-    }
-
-    if (isThunk(next)) {
-        if (isSameThunk(pre, next)) {
-            return updateThunk(node, pre, next, index)
-        } else {
-            return replaceThunk(node, pre, next, index)
-        }
-    }
-}
 
 /**
  * 删除节点
