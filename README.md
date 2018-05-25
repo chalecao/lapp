@@ -16,11 +16,7 @@
 &nbsp; &nbsp; ✓ Publish as CommonJS, ES2015 and UMD via [Rollup](http://rollupjs.org/)
 
 ### Documentation
-
-* [Getting Started](docs/getting-started.md)
-* [Recipes](docs/recipes)
-  * [functional programming componnent ](docs/recipes/fp-component.md)
-  * [class componnent](docs/recipes/class-component.md)
+see demo folder example.
 
 See also [fed123.com](https://www.fed123.com/)
 
@@ -32,6 +28,10 @@ See also [fed123.com](https://www.fed123.com/)
 
 
 ### changelog
+#### 2018.05.2
+1. add onMount, afterMount, onUpdate event support
+
+#### 2018.04.31
 1. up to my project experience, i delete APIs that no need, to make lapp as small as possiable.
 2. for curry function bind in the view, you should add 'forceUpdate' attribute on the element, to make sure update the function when update dom. if not, may cause the function didn't update.
 

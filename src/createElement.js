@@ -18,7 +18,7 @@ function createTextNode(text) {
  */
 function createThunk(vnode, dispatch) {
     let { props, children } = vnode
-    let { onCreate } = vnode.options
+
     let model = {
         children,
         props
@@ -50,7 +50,7 @@ function createThunk(vnode, dispatch) {
     }
     let DOMElement = createElement(output)
     addEventListeners(DOMElement, output.attributes)
-    if (onCreate) onCreate(model)
+
     vnode.state = {
         vnode: output,
         $ins: ins,
@@ -72,19 +72,19 @@ function createHTMLElement(vnode, dispatch) {
     vnode.attributes && updateAttributes($el, vnode.attributes)
     vnode.attributes && addEventListeners($el, vnode.attributes)
     vnode.children
-        .map(item => ({ item, el: createElement(item, dispatch) }))
+        .map(item => {
+            return { item, el: createElement(item, dispatch) }
+        })
         .forEach(({ item, el }) => {
             //把子view的$update绑定到父元素的$update
             if (item.type == "thunk") {
                 item.fn.$update = () => vnode.fn.$update && vnode.fn.$update();
-                item.props.onMount && item.props.onMount();
             }
-
-            $el.appendChild(el)
-
-            if (item.type == "thunk") {
-                item.props.afterMount && item.props.afterMount();
-            }
+            try {
+                item.state.vnode.attributes.onMount && item.state.vnode.attributes.onMount();
+                $el.appendChild(el)
+                item.state.vnode.attributes.afterMount && item.state.vnode.attributes.afterMount();
+            } catch (e) { }
         })
 
     return $el
