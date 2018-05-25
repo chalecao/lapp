@@ -15,7 +15,9 @@ const del = require('del');
 const rollup = require('rollup');
 const babel = require('rollup-plugin-babel');
 const pkg = require('../package.json');
-
+const uglify = require( 'rollup-plugin-uglify').uglify;
+const minify = require( 'uglify-es').minify;
+const buble = require( 'rollup-plugin-buble');
 let promise = Promise.resolve();
 
 // Clean up the output directory
@@ -26,22 +28,26 @@ promise = promise.then(() => del(['dist/*']));
     promise = promise.then(() => rollup.rollup({
         input: 'src/index.js',
         external: Object.keys(pkg.dependencies),
-        plugins: [babel(Object.assign({
-            babelrc: false,
-            exclude: 'node_modules/**',
-            runtimeHelpers: true,
-            presets: [[
-                'env',
-                {
-                  'modules': false
-                }
-              ]],
-            plugins: [
-                ['transform-react-jsx', {
-                    'pragma': 'l'
-                }], "external-helpers"
-            ]
-        }))]
+        plugins: [
+            babel(Object.assign({
+                babelrc: false,
+                exclude: 'node_modules/**',
+                runtimeHelpers: true,
+                presets: [[
+                    'env',
+                    {
+                        'modules': false
+                    }
+                ]],
+                plugins: [
+                    ['transform-react-jsx', {
+                        'pragma': 'l'
+                    }], "external-helpers"
+                ]
+            })),
+            buble(),
+            uglify({ mangle: { toplevel: true } }, minify)
+        ]
     }).then(bundle => bundle.write({
         file: `dist/${format === 'cjs' ? 'index' : `index.${format}`}.js`,
         format,

@@ -72,14 +72,20 @@ function createHTMLElement(vnode, dispatch) {
     vnode.attributes && updateAttributes($el, vnode.attributes)
     vnode.attributes && addEventListeners($el, vnode.attributes)
     vnode.children
-        .map(item => {
+        .map(item => ({ item, el: createElement(item, dispatch) }))
+        .forEach(({ item, el }) => {
             //把子view的$update绑定到父元素的$update
             if (item.type == "thunk") {
                 item.fn.$update = () => vnode.fn.$update && vnode.fn.$update();
+                item.props.onMount && item.props.onMount();
             }
-            return createElement(item, dispatch)
+
+            $el.appendChild(el)
+
+            if (item.type == "thunk") {
+                item.props.afterMount && item.props.afterMount();
+            }
         })
-        .forEach($el.appendChild.bind($el))
 
     return $el
 }
