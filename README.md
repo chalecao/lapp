@@ -30,7 +30,7 @@ See also [fed123.com](https://www.fed123.com/)
 
 ### changelog
 #### 2018.05.2
-1. add onShow callback, week life circle control, because you can control it in you view.
+1. add onShow callback, week life circle control, because you can control it in you view. add dom element as onShow callback parameter. see example below.
 2. add key when use subview. <myCard key="aa" > , if key property no change ,then don't update this subview. thsi would be useful shen you have card list.
 ```
 --- main.js
@@ -67,7 +67,7 @@ export const actions = {
     addCount: () => {
         state.count++;
     },
-    onShow: () => {
+    onShow: (dom) => {
         state.count = 50;
         setTimeout(() => {
             MyButtonView.$update()

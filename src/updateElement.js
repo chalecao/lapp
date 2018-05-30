@@ -56,7 +56,7 @@ export function updateElement(node, pre, next, index = 0) {
 
     if (isThunk(next)) {
         if (isSameThunk(pre, next)) {
-            if (!pre.props.key || (pre.props.key != next.props.key)) {
+            if (!pre.props || !next.props || !pre.props.key || (pre.props.key != next.props.key)) {
                 updateThunk(node, pre, next, index); return;
             } else {
                 next.state = pre.state

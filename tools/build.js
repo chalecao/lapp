@@ -46,7 +46,7 @@ promise = promise.then(() => del(['dist/*']));
                 ]
             })),
             buble(),
-            uglify({ mangle: { toplevel: true } }, minify)
+            // uglify({ mangle: { toplevel: true } }, minify)
         ]
     }).then(bundle => bundle.write({
         file: `dist/${format === 'cjs' ? 'index' : `index.${format}`}.js`,

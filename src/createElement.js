@@ -17,7 +17,7 @@ function createTextNode(text) {
  * @param vnode
  */
 function createThunk(vnode, dispatch) {
-    let { props, children } = vnode
+    let { props = {}, children } = vnode
 
     let model = {
         children,
@@ -34,6 +34,7 @@ function createThunk(vnode, dispatch) {
     } else {
         try {
             output = vnode.fn(model)
+            dispatch = () => vnode.fn.$update && vnode.fn.$update();
         } catch (e) {
             // console.log(e)
             // 兼容对于打包工具会把class 打包出一个包裹的function，这时候会误判, 所以fn失败就还是采用new的形式
@@ -48,11 +49,12 @@ function createThunk(vnode, dispatch) {
     if (!output) {
         return ''
     }
-    let DOMElement = createElement(output)
+    let DOMElement = createElement(output, dispatch)
     addEventListeners(DOMElement, output.attributes)
 
     //渲染后执行onShow
-    output.attributes.onShow && output.attributes.onShow();
+    output.attributes && output.attributes.onShow && output.attributes.onShow(DOMElement);
+    output.props && output.props.onShow && output.props.onShow(DOMElement);
 
     vnode.state = {
         vnode: output,
@@ -76,11 +78,12 @@ function createHTMLElement(vnode, dispatch) {
     vnode.attributes && addEventListeners($el, vnode.attributes)
     vnode.children
         .map(item => {
+            let dom = createElement(item, dispatch);
             //把子view的$update绑定到父元素的$update
             if (item.type == "thunk") {
-                item.fn.$update = () => vnode.fn.$update && vnode.fn.$update();
+                item.fn.$update = () => dispatch && dispatch();
             }
-            return createElement(item, dispatch)
+            return dom
         })
         .forEach($el.appendChild.bind($el))
 
