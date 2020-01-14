@@ -43,7 +43,7 @@ class main extends component {
       </li>
       {/* this node will always be updated */}
       <li onClick={this.handleClick2.bind(this)} forceUpdate>text</li>
-      <MyButton className='button'>hello, button</MyButton>
+      <MyButton className='button'>hello, button{aa[1]}, "{aa[2]}"</MyButton>
       <IF cond={this.aa > 0}>
                 aa 大于 0
         <ELSE cond={this.bb > 0}>

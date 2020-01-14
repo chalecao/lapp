@@ -2,73 +2,9 @@
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
-  return typeof obj;
-} : function (obj) {
-  return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-};
-
-var classCallCheck = function (instance, Constructor) {
-  if (!(instance instanceof Constructor)) {
-    throw new TypeError("Cannot call a class as a function");
-  }
-};
-
-var createClass = function () {
-  function defineProperties(target, props) {
-    for (var i = 0; i < props.length; i++) {
-      var descriptor = props[i];
-      descriptor.enumerable = descriptor.enumerable || false;
-      descriptor.configurable = true;
-      if ("value" in descriptor) descriptor.writable = true;
-      Object.defineProperty(target, descriptor.key, descriptor);
-    }
-  }
-
-  return function (Constructor, protoProps, staticProps) {
-    if (protoProps) defineProperties(Constructor.prototype, protoProps);
-    if (staticProps) defineProperties(Constructor, staticProps);
-    return Constructor;
-  };
-}();
-
-var inherits = function (subClass, superClass) {
-  if (typeof superClass !== "function" && superClass !== null) {
-    throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
-  }
-
-  subClass.prototype = Object.create(superClass && superClass.prototype, {
-    constructor: {
-      value: subClass,
-      enumerable: false,
-      writable: true,
-      configurable: true
-    }
-  });
-  if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
-};
-
-var possibleConstructorReturn = function (self, call) {
-  if (!self) {
-    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
-  }
-
-  return call && (typeof call === "object" || typeof call === "function") ? call : self;
-};
-
-var toConsumableArray = function (arr) {
-  if (Array.isArray(arr)) {
-    for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
-
-    return arr2;
-  } else {
-    return Array.from(arr);
-  }
-};
-
 var isType = function isType(type) {
     return function (value) {
-        return (typeof value === 'undefined' ? 'undefined' : _typeof(value)) === type;
+        return typeof value === type;
     };
 };
 var isVType = function isVType(type) {
@@ -117,7 +53,7 @@ var JSON2Hash = function JSON2Hash(data, path) {
     var res = {};
     Object.keys(data).forEach(function (key) {
         res[path + '.' + key] = data[key];
-        if (_typeof(data[key]) === 'object') {
+        if (typeof data[key] === 'object') {
             res = Object.assign(res, JSON2Hash(data[key], path + '.' + key));
         }
     });
@@ -210,27 +146,54 @@ function reduceChildren(children, vnode) {
     if (isString(vnode) || isNumber(vnode)) {
         children.push(createText(vnode));
     } else if (isNull(vnode) || isUndefined(vnode)) ; else if (isArray(vnode)) {
-        children = [].concat(toConsumableArray(children), toConsumableArray(vnode.reduce(reduceChildren, [])));
+        children = [].concat(children, vnode.reduce(reduceChildren, []));
     } else {
         children.push(vnode);
     }
     return children;
 }
 
+var classCallCheck = function (instance, Constructor) {
+  if (!(instance instanceof Constructor)) {
+    throw new TypeError("Cannot call a class as a function");
+  }
+};
+
+var inherits = function (subClass, superClass) {
+  if (typeof superClass !== "function" && superClass !== null) {
+    throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
+  }
+
+  subClass.prototype = Object.create(superClass && superClass.prototype, {
+    constructor: {
+      value: subClass,
+      enumerable: false,
+      writable: true,
+      configurable: true
+    }
+  });
+  if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+};
+
+var possibleConstructorReturn = function (self, call) {
+  if (!self) {
+    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+  }
+
+  return call && (typeof call === "object" || typeof call === "function") ? call : self;
+};
+
 var component = function () {
   function component() {
     classCallCheck(this, component);
   }
 
-  createClass(component, [{
-    key: "$update",
-    value: function $update(dispatch) {
-      dispatch && dispatch();
-    }
-  }, {
-    key: "render",
-    value: function render() {}
-  }]);
+  component.prototype.$update = function $update(dispatch) {
+    dispatch && dispatch();
+  };
+
+  component.prototype.render = function render() {};
+
   return component;
 }();
 
@@ -708,18 +671,125 @@ var ifBox = function (_component) {
 
   function ifBox() {
     classCallCheck(this, ifBox);
-    return possibleConstructorReturn(this, (ifBox.__proto__ || Object.getPrototypeOf(ifBox)).apply(this, arguments));
+    return possibleConstructorReturn(this, _component.apply(this, arguments));
   }
 
-  createClass(ifBox, [{
-    key: 'render',
-    value: function render(_ref) {
-      var props = _ref.props,
-          children = _ref.children;
+  ifBox.prototype.render = function render(_ref) {
+    var props = _ref.props,
+        children = _ref.children;
 
-      var _children = deepClone(children);
-      var elseBox = findChildren(children, 'else');
-      elseBox.index >= 0 && _children.splice(elseBox.index, 1);
+    var _children = deepClone(children);
+    var elseBox = findChildren(children, 'else');
+    elseBox.index >= 0 && _children.splice(elseBox.index, 1);
+    var subprop = deepClone(props);
+    delete subprop['cond'];
+    if (props.cond) {
+      return createNode(
+        'div',
+        subprop,
+        _children
+      );
+    } else {
+      return createNode(
+        'div',
+        subprop,
+        elseBox.children
+      );
+    }
+  };
+
+  return ifBox;
+}(component);
+
+var forBox = function (_component) {
+  inherits(forBox, _component);
+
+  function forBox() {
+    classCallCheck(this, forBox);
+    return possibleConstructorReturn(this, _component.apply(this, arguments));
+  }
+
+  forBox.prototype.handlePath = function handlePath(item, hashData) {
+    var paths = item.match(/__(.*?)__/g);
+    var d = '';
+    paths && paths.forEach(function (path) {
+      d = hashData[path.substring(2, path.length - 2)];
+      item = item.replace(path, typeof d === 'undefined' ? '' : d);
+    });
+    return item;
+  };
+
+  forBox.prototype.handleAttribute = function handleAttribute(attributes, hashData) {
+    var _this2 = this;
+
+    Object.keys(attributes).forEach(function (key) {
+      attributes[key] = _this2.handlePath(attributes[key], hashData);
+    });
+  };
+
+  forBox.prototype.handleChildren = function handleChildren(children, hashData) {
+    var _this3 = this;
+
+    children.forEach(function (item) {
+      if (item.nodeValue) {
+        item.nodeValue = _this3.handlePath(item.nodeValue, hashData);
+      }
+      item.attributes && _this3.handleAttribute(item.attributes, hashData);
+      item.children && _this3.handleChildren(item.children, hashData);
+    });
+    return children;
+  };
+
+  forBox.prototype.render = function render(_ref) {
+    var _this4 = this;
+
+    var props = _ref.props,
+        children = _ref.children;
+
+    if (props.data) {
+      var hashData = '';
+      var allChidren = [];
+      props.data.forEach(function (item, i) {
+        item.index = i;
+        hashData = JSON2Hash(item, props.key || 'item');
+        allChidren = allChidren.concat(_this4.handleChildren(deepClone(children), hashData));
+      });
+      var subprop = deepClone(props);
+      delete subprop['data'];
+      delete subprop['key'];
+      return createNode(
+        'div',
+        subprop,
+        allChidren
+      );
+    } else {
+      return '';
+    }
+  };
+
+  return forBox;
+}(component);
+
+var elseBox = function (_component) {
+  inherits(elseBox, _component);
+
+  function elseBox() {
+    classCallCheck(this, elseBox);
+    return possibleConstructorReturn(this, _component.apply(this, arguments));
+  }
+
+  elseBox.prototype.render = function render(_ref) {
+    var props = _ref.props,
+        children = _ref.children;
+
+    if (props && Object.keys(props).indexOf('cond') >= 0) {
+      var elseChildren = findChildren(children, 'else');
+
+      var _children = children;
+      if (elseChildren.index >= 0) {
+        _children = deepClone(children);
+        _children.splice(elseChildren.index, 1);
+      }
       var subprop = deepClone(props);
       delete subprop['cond'];
       if (props.cond) {
@@ -732,134 +802,18 @@ var ifBox = function (_component) {
         return createNode(
           'div',
           subprop,
-          elseBox.children
+          elseChildren.children
         );
       }
+    } else {
+      return createNode(
+        'div',
+        props,
+        children
+      );
     }
-  }]);
-  return ifBox;
-}(component);
+  };
 
-var forBox = function (_component) {
-  inherits(forBox, _component);
-
-  function forBox() {
-    classCallCheck(this, forBox);
-    return possibleConstructorReturn(this, (forBox.__proto__ || Object.getPrototypeOf(forBox)).apply(this, arguments));
-  }
-
-  createClass(forBox, [{
-    key: 'handlePath',
-    value: function handlePath(item, hashData) {
-      var paths = item.match(/__(.*?)__/g);
-      var d = '';
-      paths && paths.forEach(function (path) {
-        d = hashData[path.substring(2, path.length - 2)];
-        item = item.replace(path, typeof d === 'undefined' ? '' : d);
-      });
-      return item;
-    }
-  }, {
-    key: 'handleAttribute',
-    value: function handleAttribute(attributes, hashData) {
-      var _this2 = this;
-
-      Object.keys(attributes).forEach(function (key) {
-        attributes[key] = _this2.handlePath(attributes[key], hashData);
-      });
-    }
-  }, {
-    key: 'handleChildren',
-    value: function handleChildren(children, hashData) {
-      var _this3 = this;
-
-      children.forEach(function (item) {
-        if (item.nodeValue) {
-          item.nodeValue = _this3.handlePath(item.nodeValue, hashData);
-        }
-        item.attributes && _this3.handleAttribute(item.attributes, hashData);
-        item.children && _this3.handleChildren(item.children, hashData);
-      });
-      return children;
-    }
-  }, {
-    key: 'render',
-    value: function render(_ref) {
-      var _this4 = this;
-
-      var props = _ref.props,
-          children = _ref.children;
-
-      if (props.data) {
-        var hashData = '';
-        var allChidren = [];
-        props.data.forEach(function (item, i) {
-          item.index = i;
-          hashData = JSON2Hash(item, props.key || 'item');
-          allChidren = allChidren.concat(_this4.handleChildren(deepClone(children), hashData));
-        });
-        var subprop = deepClone(props);
-        delete subprop['data'];
-        delete subprop['key'];
-        return createNode(
-          'div',
-          subprop,
-          allChidren
-        );
-      } else {
-        return '';
-      }
-    }
-  }]);
-  return forBox;
-}(component);
-
-var elseBox = function (_component) {
-  inherits(elseBox, _component);
-
-  function elseBox() {
-    classCallCheck(this, elseBox);
-    return possibleConstructorReturn(this, (elseBox.__proto__ || Object.getPrototypeOf(elseBox)).apply(this, arguments));
-  }
-
-  createClass(elseBox, [{
-    key: 'render',
-    value: function render(_ref) {
-      var props = _ref.props,
-          children = _ref.children;
-
-      if (props && Object.keys(props).indexOf('cond') >= 0) {
-        var elseChildren = findChildren(children, 'else');
-
-        var _children = children;
-        if (elseChildren.index >= 0) {
-          _children = deepClone(children);
-          _children.splice(elseChildren.index, 1);
-        }
-        var subprop = deepClone(props);
-        delete subprop['cond'];
-        if (props.cond) {
-          return createNode(
-            'div',
-            subprop,
-            _children
-          );
-        } else {
-          return createNode(
-            'div',
-            subprop,
-            elseChildren.children
-          );
-        }
-      } else {
-        return createNode(
-          'div',
-          props,
-          children
-        );
-      }
-    }
-  }]);
   return elseBox;
 }(component);
 
